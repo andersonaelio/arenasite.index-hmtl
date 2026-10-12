@@ -1,0 +1,80 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Produto · Arena Prime</title>
+<meta name="description" content="Produto da Arena Prime, loja de card game em Florianópolis. Pedido fechado pelo WhatsApp.">
+<meta property="og:type" content="product">
+<meta property="og:title" content="Produto · Arena Prime">
+<meta property="og:description" content="Pedido fechado pelo WhatsApp com a Arena Prime.">
+<meta property="og:image" content="assets/img/og.jpg">
+<meta name="theme-color" content="#111111">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/arena.css">
+</head>
+<body>
+<div id="hdr"></div>
+<main id="conteudo">
+  <section class="page-head"><div class="wrap"><nav aria-label="Você está em"><ol class="crumbs" id="crumbs"></ol></nav></div></section>
+  <section class="band" aria-label="Produto">
+    <div class="panel light" id="box"><p class="empty">Carregando…</p></div>
+  </section>
+  <section class="agenda" aria-labelledby="rel-t" id="rel-sec" hidden>
+    <div class="wrap" style="display:block">
+      <h2 class="sec-title" id="rel-t" style="margin-bottom:28px">Mais desse jogo</h2>
+      <div class="panel light" style="padding:40px clamp(20px,4vw,48px)"><div class="track" id="rel" role="list"></div></div>
+    </div>
+  </section>
+</main>
+<div id="ftr"></div>
+
+<script src="assets/arena.js"></script>
+<script>
+(async function () {
+  mountChrome('loja');
+  await nomesJogos();
+  const id = new URLSearchParams(location.search).get('id');
+  const p = id ? await DB.produto(id) : null;
+  if (!p) {
+    $('#box').innerHTML = '<div class="empty"><h1 class="sec-title" style="color:var(--light-ink)">Produto não encontrado</h1><p>Pode ter sido vendido ou saído do site.</p><a class="btn btn-dark" href="loja.html">Voltar pra loja</a></div>';
+    $('#crumbs').innerHTML = '<li><a href="index.html">Início</a></li><li><a href="loja.html">Loja</a></li>'; return;
+  }
+  const jn = _jogosNome[p.jogo] || '';
+  document.title = p.nome + ' · Arena Prime';
+  $('#crumbs').innerHTML = `<li><a href="index.html">Início</a></li><li><a href="loja.html">Loja</a></li><li><a href="loja.html?jogo=${esc(p.jogo)}">${esc(jn)}</a></li><li><a href="loja.html?jogo=${esc(p.jogo)}&tipo=${p.tipo}">${p.tipo === 'carta' ? 'Cartas avulsas' : 'Lacrados'}</a></li><li><span aria-current="page">${esc(p.nome)}</span></li>`;
+  const specs = p.tipo === 'carta'
+    ? [p.colecao, p.numero ? '#' + p.numero : '', p.raridade, p.condicao, p.idioma ? 'Idioma ' + p.idioma : '']
+    : [p.categoria, p.colecao];
+  const sem = (p.estoque ?? 0) <= 0;
+  let qtd = 1;
+  $('#box').innerHTML = `<div class="prod">
+    <div class="stage">${media(p)}</div>
+    <div class="prod-info">
+      <p class="tag" style="margin-top:0">${esc(jn.toUpperCase())} · ${p.tipo === 'carta' ? 'CARTA AVULSA' : 'LACRADO'}</p>
+      <h1>${esc(p.nome)}</h1>
+      <ul class="specs">${specs.filter(Boolean).map((s) => `<li>${esc(s)}</li>`).join('')}</ul>
+      <p class="big-price">${money(p.preco)}</p>
+      <p style="margin:0;color:var(--light-muted);font-weight:600">${sem ? 'Esgotado no momento' : p.estoque === 1 ? 'Última unidade' : p.estoque + ' em estoque'}</p>
+      <div class="buy-row">
+        ${sem ? '' : `<div class="qty" role="group" aria-label="Quantidade"><button type="button" id="qmenos" aria-label="Diminuir quantidade">−</button><output id="q" aria-live="polite">1</output><button type="button" id="qmais" aria-label="Aumentar quantidade">+</button></div>`}
+        ${sem ? `<a class="btn btn-accent" href="${waLink('Oi, Arena Prime! O ' + p.nome + ' vai voltar ao estoque?')}" target="_blank" rel="noopener">Avisar quando chegar</a>`
+              : `<button type="button" class="btn btn-accent" id="buy">Colocar no pedido</button>`}
+        <a class="btn btn-dark" href="${waLink('Oi, Arena Prime! Tenho uma dúvida sobre ' + p.nome + '.')}" target="_blank" rel="noopener">Tirar dúvida</a>
+      </div>
+      <p class="note" style="margin-top:18px">O pedido é fechado no WhatsApp da loja. Pagamento e retirada combinados direto com a Arena.</p>
+    </div></div>`;
+  if (!sem) {
+    const set = () => { $('#q').textContent = qtd; };
+    $("#qmenos").onclick = () => { qtd = Math.max(1, qtd - 1); set(); };
+    $("#qmais").onclick = () => { qtd = Math.min(p.estoque, qtd + 1); set(); };
+    $('#buy').onclick = () => { Cart.add(p, qtd); openDrawer(); };
+  }
+  const rel = (await DB.produtos({ jogo: p.jogo })).filter((x) => x.id !== p.id).slice(0, 10);
+  if (rel.length) { $('#rel').innerHTML = rel.map((x) => itemHTML(x, true)).join(''); $('#rel-sec').hidden = false; }
+})();
+</script>
+</body>
+</html>

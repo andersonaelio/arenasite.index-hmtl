@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Arena Prime · Loja de card game em Florianópolis</title>
+<meta name="description" content="One Piece, Pokémon, Magic e board games em Carianos, Florianópolis. Veja o que chegou na loja, a agenda da semana e feche o pedido pelo WhatsApp.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Arena Prime · Loja de card game em Florianópolis">
+<meta property="og:description" content="One Piece, Pokémon, Magic e board games. Veja o que chegou e feche o pedido pelo WhatsApp.">
+<meta property="og:image" content="assets/img/og.jpg">
+<meta name="theme-color" content="#111111">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/arena.css">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Store","name":"Arena Prime","address":{"@type":"PostalAddress","streetAddress":"R. Ver. Osvaldo Bittencourt, 637","addressLocality":"Florianópolis","addressRegion":"SC","postalCode":"88047-700","addressCountry":"BR"},"telephone":"+55 48 99963-0724","openingHours":["Mo-Su 10:00-12:00","Mo-Su 14:00-22:00"],"sameAs":["https://instagram.com/arenaprimefloripa"]}</script>
+</head>
+<body>
+<div id="hdr"></div>
+<main id="conteudo">
+
+  <section class="hero" aria-labelledby="jogos-t">
+    <div class="hero-glow" aria-hidden="true"></div>
+    <div class="wrap">
+      <div class="hero-left">
+        <h1 id="jogos-t" class="eyebrow">O que você joga?</h1>
+        <ul class="games" id="games"></ul>
+        <a class="next-ev" id="next-ev" href="#agenda" hidden></a>
+      </div>
+      <div class="feat light" id="feat" aria-live="polite"></div>
+    </div>
+  </section>
+
+  <section class="band" aria-labelledby="chegou-t">
+    <div class="panel light">
+      <div class="panel-head">
+        <h2 id="chegou-t">Chegou na loja</h2>
+        <a href="loja.html" style="font-weight:700">Ver a loja inteira</a>
+      </div>
+      <div class="shelf" data-shelf>
+        <div class="shelf-head"><h3 id="sh-lac">Produtos lacrados</h3>
+          <div class="shelf-ctrl"><a href="loja.html?tipo=lacrado">Ver todos</a>
+            <button type="button" class="arrow" data-dir="-1" aria-label="Voltar nos produtos lacrados"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
+            <button type="button" class="arrow" data-dir="1" aria-label="Avançar nos produtos lacrados"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
+          </div></div>
+        <div class="track" id="t-lac" role="list" aria-labelledby="sh-lac" tabindex="0"></div>
+      </div>
+      <div class="shelf" data-shelf>
+        <div class="shelf-head"><h3 id="sh-car">Cartas avulsas</h3>
+          <div class="shelf-ctrl"><a href="loja.html?tipo=carta">Ver todas</a>
+            <button type="button" class="arrow" data-dir="-1" aria-label="Voltar nas cartas avulsas"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
+            <button type="button" class="arrow" data-dir="1" aria-label="Avançar nas cartas avulsas"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
+          </div></div>
+        <div class="track" id="t-car" role="list" aria-labelledby="sh-car" tabindex="0"></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="band por-jogo" id="por-jogo" aria-label="Produtos por jogo" hidden>
+    <div class="panel light" id="pj-panel"></div>
+  </section>
+
+  <section class="agenda" id="agenda" aria-labelledby="agenda-t">
+    <div class="wrap">
+      <div style="flex:1 1 300px">
+        <h2 id="agenda-t">Agenda da mesa</h2>
+        <p style="margin:16px 0 0;color:var(--muted);max-width:340px">Loja aberta todos os dias, das 10h às 12h e das 14h às 22h. O que estiver "a confirmar", chama no WhatsApp antes de vir.</p>
+      </div>
+      <ul class="ev-list" id="eventos"></ul>
+    </div>
+  </section>
+
+  <section class="band esc-band" id="escolinha" aria-labelledby="esc-t">
+    <div class="panel light esc">
+      <div class="esc-top">
+        <div class="esc-intro">
+          <p class="tag" style="margin-top:0">ESCOLINHA · POKÉMON</p>
+          <h2 id="esc-t">Aprenda a jogar Pokémon na Arena</h2>
+          <p class="esc-sum">Aulas na mesa da loja, com outras crianças, pra aprender a jogar e jogar de verdade. A escolinha de One Piece abre em breve.</p>
+          <ul class="esc-facts">
+            <li><span>Valor</span><b>R$ 100 por mês</b></li>
+            <li><span>Dia e horário</span><b>[a confirmar]</b></li>
+            <li><span>Idade</span><b>[a confirmar]</b></li>
+          </ul>
+        </div>
+        <div class="esc-cta">
+          <button type="button" class="btn btn-accent esc-btn" id="esc-open" aria-expanded="false" aria-controls="matricula">Inscreva-se na escolinha</button>
+          <p class="note">Leva 1 minuto. Se for criança, chama alguém da família pra preencher junto.</p>
+        </div>
+      </div>
+
+      <form class="mat" id="matricula" novalidate hidden aria-labelledby="mat-t">
+        <h3 id="mat-t">Inscrição na escolinha</h3>
+        <p class="note" style="margin:-6px 0 18px">A inscrição chega pra loja e fica pendente até ela confirmar com vocês pelo WhatsApp.</p>
+        <div class="mat-grid">
+          <label class="field">Nome de quem vai participar (obrigatório)
+            <input class="input" name="aluno" autocomplete="off" required aria-describedby="m-e-aluno"></label>
+          <label class="field">Idade (obrigatório)
+            <input class="input" name="idade" type="number" min="3" max="99" inputmode="numeric" required aria-describedby="m-e-idade"></label>
+          <p class="err" id="m-e-aluno" hidden>Escreve o nome de quem vai participar.</p>
+          <p class="err" id="m-e-idade" hidden>Escreve a idade em número, tipo 9.</p>
+          <label class="field">Nome do responsável (obrigatório)
+            <input class="input" name="responsavel" autocomplete="name" required aria-describedby="m-e-resp"></label>
+          <label class="field">WhatsApp do responsável (obrigatório)
+            <input class="input" name="whatsapp" type="tel" inputmode="tel" autocomplete="tel" placeholder="(48) 99999-9999" required aria-describedby="m-e-wa"></label>
+          <p class="err" id="m-e-resp" hidden>Escreve o nome de quem é responsável.</p>
+          <p class="err" id="m-e-wa" hidden>Escreve o WhatsApp com DDD, tipo 48 99999-9999.</p>
+          <fieldset class="full" style="border:0;padding:0;margin:0"><legend class="field" style="margin-bottom:8px">Qual escolinha</legend>
+            <div class="seg"><label><input type="radio" name="jogo" value="pokemon" checked> Pokémon</label><label aria-disabled="true" style="opacity:.6"><input type="radio" name="jogo" value="onepiece" disabled> One Piece (em breve)</label></div>
+          </fieldset>
+          <label class="field full">Quer contar alguma coisa? <small>Opcional</small>
+            <textarea class="input" name="obs" maxlength="500"></textarea></label>
+          <label class="hp" aria-hidden="true">Site<input name="site" tabindex="-1" autocomplete="off"></label>
+        </div>
+        <p class="note">Os dados ficam só com a Arena, pra combinar a escolinha.</p>
+        <button type="submit" class="btn btn-accent" style="margin-top:12px">Enviar inscrição</button>
+        <p id="mat-ok" class="ok-msg" role="status" aria-live="polite"></p>
+      </form>
+
+      <div class="esc-learn">
+        <h3>Você sabe o que um card game ensina?</h3>
+        <div class="esc-grid">
+          <figure class="esc-card" aria-label="Carta do Abra com três pontos marcados: o nome, o texto do ataque e os números de vida e dano">
+            <img src="assets/img/abra.webp" alt="">
+            <span class="pin" style="left:14%;top:5%">1</span>
+            <span class="pin" style="left:30%;top:63%">2</span>
+            <span class="pin" style="left:80%;top:5%">3</span>
+          </figure>
+          <ol class="esc-list">
+            <li><b>Inglês</b> Muitas cartas vêm em inglês. Nome, ataque e regra se repetem tanto que as palavras viram conhecidas.</li>
+            <li><b>Leitura</b> Toda carta tem um texto que precisa ser lido e entendido pra jogar a vez.</li>
+            <li><b>Matemática</b> Vida, dano e contadores. A partida inteira é conta de cabeça.</li>
+            <li class="no-pin"><b>Convivência</b> Esperar a vez, ganhar, perder e conversar com quem está do outro lado da mesa.</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="wish-sec" id="lista" aria-labelledby="lista-t">
+    <div class="wrap">
+      <div class="wish-txt">
+        <h2 id="lista-t" class="sec-title">Não achou a carta?</h2>
+        <p>Diz qual é e a versão, se souber. A loja procura e te chama no WhatsApp.</p>
+      </div>
+      <form class="wish light" id="lista-form" novalidate aria-labelledby="lista-t">
+        <label class="field">Carta (obrigatório)
+          <input class="input" name="carta" required autocomplete="off" placeholder="Ex: Mega Charizard X" aria-describedby="e-carta">
+        </label>
+        <p class="err" id="e-carta" hidden>Escreve o nome da carta que você procura.</p>
+        <label class="field">Versão ou coleção <small>Se souber</small>
+          <input class="input" name="versao" autocomplete="off">
+        </label>
+        <label class="field">Seu nome (obrigatório)
+          <input class="input" name="nome" required autocomplete="name" aria-describedby="e-nome">
+        </label>
+        <p class="err" id="e-nome" hidden>Escreve seu nome pra loja saber quem chamar.</p>
+        <label class="hp" aria-hidden="true">Site<input name="site" tabindex="-1" autocomplete="off"></label>
+        <button type="submit" class="btn btn-accent" style="margin-top:6px">Mandar pro WhatsApp</button>
+        <p id="lista-ok" class="ok-msg" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+  </section>
+</main>
+<div id="ftr"></div>
+
+<script src="assets/arena.js"></script>
+<script>
+(async function () {
+  mountChrome('home');
+  $('#esc-open').addEventListener('click', () => {
+    const f = $('#matricula'), abre = f.hidden; f.hidden = !abre; $('#esc-open').setAttribute('aria-expanded', abre);
+    if (abre) f.aluno.focus();
+  });
+  ['#matricula', '#lista-form'].forEach((sel) => $(sel).addEventListener('input', (e) => { const d = e.target.getAttribute('aria-describedby'); if (d && $('#' + d)) { $('#' + d).hidden = true; e.target.removeAttribute('aria-invalid'); } }));
+  $('#matricula').addEventListener('submit', async (e) => {
+    e.preventDefault(); const f = e.target;
+    if (f.site.value) return;
+    const v = { aluno: f.aluno.value.trim(), idade: parseInt(f.idade.value, 10), responsavel: f.responsavel.value.trim(), whatsapp: f.whatsapp.value.replace(/\D/g, ''), jogo: f.jogo.value, obs: f.obs.value.trim() };
+    const ok = { aluno: !!v.aluno, idade: v.idade >= 3 && v.idade <= 99, resp: !!v.responsavel, wa: v.whatsapp.length >= 10 && v.whatsapp.length <= 13 };
+    [['aluno', 'm-e-aluno', ok.aluno], ['idade', 'm-e-idade', ok.idade], ['responsavel', 'm-e-resp', ok.resp], ['whatsapp', 'm-e-wa', ok.wa]].forEach(([n, id, g]) => { $('#' + id).hidden = g; f[n].setAttribute('aria-invalid', !g); });
+    const first = ['aluno', 'idade', 'responsavel', 'whatsapp'].find((n, i) => !Object.values(ok)[i]);
+    if (first) { f[first].focus(); return; }
+    if (!podeEnviar('matricula', 60)) { $('#mat-ok').textContent = 'Inscrição já enviada. Se precisar mudar algo, chama a loja no WhatsApp.'; return; }
+    const msg = `Oi, Arena Prime! Fiz a inscrição na escolinha de Pokémon pelo site.\n\nQuem vai participar: ${v.aluno}, ${v.idade} anos\nResponsável: ${v.responsavel}\nWhatsApp: ${f.whatsapp.value.trim()}${v.obs ? '\nObservação: ' + v.obs : ''}`;
+    const win = window.open('', '_blank');
+    try { await DB.novaMatricula(v); } catch (err) { /* a mensagem do WhatsApp ainda leva a inscrição */ }
+    if (win) win.location = waLink(msg); else location.href = waLink(msg);
+    $('#mat-ok').textContent = 'Inscrição enviada! A loja confirma com vocês pelo WhatsApp.'; f.reset();
+  });
+  await nomesJogos();
+  const todosProdutos = await DB.produtos();
+  const jogosTodos = await DB.jogos();
+  const comEstoque = jogosTodos.filter((j) => todosProdutos.some((p) => p.jogo === j.id));
+  const jogos = comEstoque.length ? comEstoque : jogosTodos;
+  let atual = jogos[0] ? jogos[0].id : null;
+
+  // primeira tela: destaque do jogo escolhido
+  async function drawFeat() {
+    const j = jogos.find((x) => x.id === atual);
+    const ps = await DB.produtos({ jogo: atual });
+    const f = ps.find((p) => p.destaque) || ps.find((p) => p.tipo === 'lacrado') || ps[0];
+    const box = $('#feat');
+    if (!f) { box.innerHTML = `<p class="tag" style="margin-top:0">${esc(j.nome.toUpperCase())}</p><p class="feat-empty">Os produtos de ${esc(j.nome)} aparecem aqui assim que forem cadastrados.</p><a class="feat-all" href="index.html#lista">Procurando algo de ${esc(j.nome)}? Pede na lista de desejos</a>`; return; }
+    const more = ps.filter((p) => p.id !== f.id).slice(0, 4);
+    const url = 'produto.html?id=' + encodeURIComponent(f.id);
+    const meta = f.tipo === 'carta' ? [f.colecao, (f.condicao || '').split(' ·')[0], f.idioma].filter(Boolean).join(' · ') : [f.categoria, f.colecao].filter(Boolean).join(' · ');
+    box.innerHTML = `<p class="tag" style="margin-top:0">${f.destaque ? 'DESTAQUE' : 'CHEGOU AGORA'} · ${esc(j.nome.toUpperCase())}</p>
+      <div class="feat-main">
+        <a class="stage feat-stage" href="${url}" tabindex="-1" aria-hidden="true">${media(f, { alt: false })}</a>
+        <div class="feat-info">
+          <h2><a href="${url}">${esc(f.nome)}</a></h2>
+          <p class="feat-meta">${esc(meta)}${f.estoque > 0 && f.estoque <= 2 ? ' · só ' + f.estoque + ' em estoque' : ''}</p>
+          <p class="big-price${f.preco == null ? ' consulta' : ''}">${f.preco == null ? 'Preço sob consulta' : money(f.preco)}</p>
+          <button type="button" class="btn btn-accent" data-add="${esc(f.id)}">Colocar no pedido</button>
+        </div>
+      </div>
+      <div class="feat-more">
+        ${more.length ? `<span>Mais de ${esc(j.nome)}</span><ul>${more.map((m) => `<li><a href="produto.html?id=${encodeURIComponent(m.id)}" aria-label="${esc(m.nome)}">${media(m, { alt: false })}</a></li>`).join('')}</ul>` : ''}
+        <a class="feat-all" href="loja.html?jogo=${esc(j.id)}">Ver tudo de ${esc(j.nome)}</a>
+      </div>`;
+    box.classList.remove('in'); void box.offsetWidth; box.classList.add('in');
+  }
+  function drawGames() {
+    $('#games').innerHTML = jogos.map((j) => `<li><button type="button" class="game-btn" data-g="${esc(j.id)}" aria-pressed="${j.id === atual}"><span class="dot"></span><span class="name">${esc(j.nome)}</span></button></li>`).join('');
+  }
+  $('#games').addEventListener('click', (e) => { const b = e.target.closest('[data-g]'); if (!b) return; atual = b.dataset.g; drawGames(); drawFeat(); $(`[data-g="${atual}"]`).focus(); });
+  drawGames(); drawFeat();
+
+  // prateleiras
+  const [lac, car] = await Promise.all([DB.produtos({ tipo: 'lacrado' }), DB.produtos({ tipo: 'carta' })]);
+  const fill = (el, list, vazio) => { el.innerHTML = list.length ? list.slice(0, 14).map((p) => itemHTML(p, true)).join('') : `<p class="empty">${vazio}</p>`; };
+  fill($('#t-lac'), lac, 'Nenhum produto lacrado em estoque agora.');
+  fill($('#t-car'), car, 'Nenhuma carta avulsa em estoque agora.');
+  // por jogo, em três níveis: a cereja (maior valor), o bolo (outros lacrados), o glacê (cartas avulsas)
+  const RANK = { 'Booster box': 6, 'Box': 5, 'Jogo de tabuleiro': 4, 'Double Pack': 3, 'Deck pronto': 3, 'Booster': 2, 'Acessório': 1 };
+  const peso = (p) => (p.preco || 0) * 1000 + (RANK[p.categoria] || 0) + (p.destaque ? 1e9 : 0);
+  const midHTML = (p) => { const url = 'produto.html?id=' + encodeURIComponent(p.id); return `<article class="pj-mid-item" role="listitem">
+      <a class="stage" href="${url}" tabindex="-1" aria-hidden="true">${media(p, { alt: false })}<span class="qty-badge">${p.estoque} unid.</span></a>
+      <p class="tag">${esc((p.categoria || '').toUpperCase())}</p><h4><a href="${url}">${esc(p.nome)}</a></h4>
+      <div class="pj-mid-foot"><span class="price">${p.preco == null ? 'Sob consulta' : money(p.preco)}</span>
+      <button type="button" class="add" data-add="${esc(p.id)}" aria-label="Colocar ${esc(p.nome)} no pedido">+ Pedido</button></div></article>`; };
+  const miniHTML = (p) => { const url = 'produto.html?id=' + encodeURIComponent(p.id); return `<article class="pj-mini" role="listitem">
+      <a class="pj-mini-img" href="${url}" tabindex="-1" aria-hidden="true">${media(p, { alt: false })}</a>
+      <div><h4><a href="${url}">${esc(p.nome)}</a></h4><p class="pj-mini-s">${esc([p.colecao, (p.condicao || '').split(' ·')[0]].filter(Boolean).join(' · '))} · ${p.estoque} unid.</p>
+      <p class="pj-mini-p">${p.preco == null ? 'Sob consulta' : money(p.preco)}</p></div>
+      <button type="button" class="pj-mini-add" data-add="${esc(p.id)}" aria-label="Colocar ${esc(p.nome)} no pedido">+</button></article>`; };
+  const pj = comEstoque.map((j) => {
+    const ps = todosProdutos.filter((p) => p.jogo === j.id);
+    const lac = ps.filter((p) => p.tipo === 'lacrado').sort((a, b) => peso(b) - peso(a));
+    const car = ps.filter((p) => p.tipo === 'carta').sort((a, b) => (b.preco || 0) - (a.preco || 0));
+    const top = lac[0] || car.shift();
+    const mids = lac.slice(1, 5);
+    const url = 'produto.html?id=' + encodeURIComponent(top.id);
+    const meta = top.tipo === 'carta' ? [top.colecao, (top.condicao || '').split(' ·')[0]].filter(Boolean).join(' · ') : [top.categoria, top.colecao].filter(Boolean).join(' · ');
+    return `<div class="pj-game">
+      <div class="pj-head"><h2 class="pj-title">${esc(j.nome)}</h2><a href="loja.html?jogo=${esc(j.id)}">Ver tudo de ${esc(j.nome)} (${ps.length})</a></div>
+      <div class="pj-top${mids.length ? '' : ' solo'}">
+        <article class="pj-hero">
+          <a class="stage" href="${url}" tabindex="-1" aria-hidden="true">${media(top, { alt: false })}<span class="qty-badge">${top.estoque} unid.</span></a>
+          <div class="pj-hero-info">
+            <p class="tag">${esc((top.tipo === 'carta' ? 'CARTA AVULSA' : top.categoria || '').toUpperCase())}</p>
+            <h3><a href="${url}">${esc(top.nome)}</a></h3>
+            <p class="feat-meta">${esc(meta)}</p>
+            <p class="big-price${top.preco == null ? ' consulta' : ''}">${top.preco == null ? 'Preço sob consulta' : money(top.preco)}</p>
+            <button type="button" class="btn btn-accent" data-add="${esc(top.id)}">Colocar no pedido</button>
+          </div>
+        </article>
+        ${mids.length ? `<div class="pj-mid" role="list" aria-label="Mais lacrados de ${esc(j.nome)}">${mids.map(midHTML).join('')}</div>` : ''}
+      </div>
+      ${car.length ? `<div class="pj-singles"><div class="pj-singles-head"><h3>Cartas avulsas de ${esc(j.nome)}</h3><a href="loja.html?jogo=${esc(j.id)}&tipo=carta">Ver todas</a></div>
+        <div class="pj-mini-row" role="list" aria-label="Cartas avulsas de ${esc(j.nome)}">${car.slice(0, 12).map(miniHTML).join('')}</div></div>` : ''}
+    </div>`;
+  }).join('');
+  if (pj) { $('#pj-panel').innerHTML = pj; $('#por-jogo').hidden = false; }
+  $$('[data-shelf]').forEach((sh) => {
+    const tr = $('.track', sh), [prev, next] = $$('.arrow', sh);
+    const sync = () => { prev.setAttribute('aria-disabled', tr.scrollLeft <= 4); next.setAttribute('aria-disabled', tr.scrollLeft + tr.clientWidth >= tr.scrollWidth - 4); };
+    $$('.arrow', sh).forEach((b) => b.addEventListener('click', () => { if (b.getAttribute('aria-disabled') === 'true') return; tr.scrollBy({ left: Number(b.dataset.dir) * Math.max(240, tr.clientWidth * 0.8), behavior: 'smooth' }); }));
+    tr.addEventListener('scroll', sync, { passive: true }); window.addEventListener('resize', sync); sync();
+  });
+
+  // agenda
+  const quandoEv = (dia) => { const hoje = new Date(), d = (dia - hoje.getDay() + 7) % 7, dt = new Date(hoje.getTime() + d * 864e5); return (d === 0 ? 'Hoje' : d === 1 ? 'Amanhã' : DIAS_LONGO[dia]) + ', ' + dt.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }); };
+  const evs = await DB.eventos();
+  const ok = evs.find((e) => e.confirmado);
+  if (ok) { const n = $('#next-ev'); n.innerHTML = `<span class="d">${DIAS[ok.dia]}</span><span><b>${esc(ok.titulo)}</b><span>${esc(ok.horario || '')} · confirmado</span></span>`; n.setAttribute('aria-label', DIAS_LONGO[ok.dia] + ': ' + ok.titulo + ', ' + (ok.horario || '') + ', confirmado. Ver agenda'); n.hidden = false; }
+  $('#eventos').innerHTML = evs.map((e) => `<li class="ev${e.confirmado ? ' ok' : ''}"><span class="day" aria-hidden="true">${DIAS[e.dia]}</span>
+    <div class="what"><p class="t"><span class="sr">${DIAS_LONGO[e.dia]}: </span>${esc(e.titulo)}</p><p class="w">${quandoEv(e.dia)}${e.horario ? ' · ' + esc(e.horario) : ''}</p></div>
+    <span class="badge">${e.confirmado ? 'Confirmado' : 'A confirmar'}</span></li>`).join('') || '<li class="ev"><p>Agenda da semana em breve.</p></li>';
+
+  // lista de desejos
+  $('#lista-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const f = e.target; if (f.site.value) return;
+    const carta = f.carta.value.trim(), nome = f.nome.value.trim(), versao = f.versao.value.trim();
+    $('#e-carta').hidden = !!carta; $('#e-nome').hidden = !!nome;
+    f.carta.setAttribute('aria-invalid', !carta); f.nome.setAttribute('aria-invalid', !nome);
+    if (!carta) { f.carta.focus(); return; } if (!nome) { f.nome.focus(); return; }
+    if (!podeEnviar('desejo', 30)) { $('#lista-ok').textContent = 'Pedido já enviado. Espera uns segundos pra mandar outro.'; return; }
+    const msg = `Oi, Arena Prime! Sou ${nome} e estou procurando a carta ${carta}${versao ? ' (' + versao + ')' : ''}. Vocês conseguem procurar pra mim?`;
+    const win = window.open('', '_blank');
+    try { await DB.novoDesejo({ carta, versao, nome }); } catch (err) { /* o WhatsApp ainda leva o pedido */ }
+    if (win) win.location = waLink(msg); else location.href = waLink(msg);
+    $('#lista-ok').textContent = 'Pronto! Sua carta entrou na lista de desejos da loja.';
+    f.reset();
+  });
+})();
+</script>
+</body>
+</html>

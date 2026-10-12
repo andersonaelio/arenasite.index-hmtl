@@ -1,0 +1,398 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Painel · Arena Prime</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="assets/arena.css">
+</head>
+<body class="adm light">
+<!-- Mapa: login · cabeçalho/abas · Produtos (lista + formulário) · Agenda · Jogos · Lista de desejos -->
+
+<div id="login-view" hidden>
+  <form class="login form-card" id="login" style="display:flex;flex-direction:column" novalidate>
+    <p class="logo" style="color:var(--light-ink)">ARENA<span style="color:var(--accent)">PRIME</span> <small style="color:var(--light-muted)">PAINEL</small></p>
+    <h1>Entrar</h1>
+    <p class="demo-note" id="login-demo" hidden>Modo demonstração: qualquer e-mail entra, e o que você mudar fica salvo só neste navegador.</p>
+    <label class="field">E-mail<input class="input" type="email" name="email" autocomplete="username" inputmode="email" required></label>
+    <label class="field">Senha<input class="input" type="password" name="senha" autocomplete="current-password"></label>
+    <p class="err" id="login-err" role="alert" hidden></p>
+    <p class="demo-note" id="login-fora" hidden>Esse login entrou, mas ainda não foi liberado na equipe da Arena. Fala com o Anderson pra liberar.</p>
+    <button class="btn btn-accent" type="submit">Entrar</button>
+  </form>
+</div>
+
+<div id="app" hidden>
+  <header class="adm-top"><div class="wrap">
+    <span class="logo">ARENA<span>PRIME</span><small>PAINEL</small></span>
+    <nav class="tabs" role="tablist" aria-label="Seções do painel">
+      <button class="tab" role="tab" data-tab="produtos" aria-selected="true">Produtos</button>
+      <button class="tab" role="tab" data-tab="agenda" aria-selected="false">Agenda</button>
+      <button class="tab" role="tab" data-tab="jogos" aria-selected="false">Jogos</button>
+      <button class="tab" role="tab" data-tab="desejos" aria-selected="false">Lista de desejos <span class="cart-count" id="n-des" hidden></span></button>
+      <button class="tab" role="tab" data-tab="matriculas" aria-selected="false">Matrículas <span class="cart-count" id="n-mat" hidden></span></button>
+      <button class="tab" role="tab" data-tab="historico" aria-selected="false">Histórico</button>
+    </nav>
+    <div style="margin-left:auto;display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+      <span id="quem" style="color:var(--soft);font-weight:600;margin-right:6px"></span>
+      <a class="btn" style="color:var(--ink)" href="index.html" target="_blank" rel="noopener">Ver site</a>
+      <button class="btn" style="background:var(--surface);color:var(--ink)" id="sair">Sair</button>
+    </div>
+  </div></header>
+
+  <main><div class="wrap">
+    <p class="demo-note" id="demo-note" hidden>Modo demonstração: as mudanças ficam salvas só neste navegador. Quando o banco for ligado, tudo passa a valer pro site de verdade.</p>
+
+    <!-- PRODUTOS -->
+    <section id="sec-produtos" role="tabpanel" aria-labelledby="t-produtos">
+      <div id="prod-list-view">
+        <div class="adm-bar">
+          <h1 id="t-produtos">Produtos</h1>
+          <button class="btn btn-accent" id="novo-prod">+ Novo produto</button>
+        </div>
+        <div class="adm-bar" style="margin-top:0">
+          <label class="field" style="flex:1 1 240px">Buscar<input class="input" type="search" id="p-busca" placeholder="Nome ou coleção"></label>
+          <label class="field" style="flex:0 1 200px">Jogo<select class="input" id="p-jogo"></select></label>
+          <label class="field" style="flex:0 1 200px">Tipo<select class="input" id="p-tipo"><option value="">Todos</option><option value="lacrado">Lacrados</option><option value="carta">Cartas avulsas</option></select></label>
+          <label class="check"><input type="checkbox" id="p-zerado"> Mostrar esgotados</label>
+        </div>
+        <p id="p-count" role="status" aria-live="polite" style="font-weight:600;color:var(--light-muted)"></p>
+        <div class="rows" id="p-rows"></div>
+      </div>
+
+      <form id="prod-form" hidden novalidate>
+        <div class="adm-bar"><h1 id="pf-title">Novo produto</h1><button type="button" class="btn btn-ghost" id="pf-cancel">Voltar pra lista</button></div>
+        <div class="form-card">
+          <fieldset class="full" style="border:0;padding:0;margin:0"><legend class="field" style="margin-bottom:8px">O que é?</legend>
+            <div class="seg"><label><input type="radio" name="tipo" value="lacrado" checked> Produto lacrado</label><label><input type="radio" name="tipo" value="carta"> Carta avulsa</label></div>
+          </fieldset>
+          <label class="field">Jogo<select class="input" name="jogo" id="pf-jogo"></select></label>
+          <label class="field" data-only="lacrado">Tipo de produto<select class="input" name="categoria" id="pf-cat"></select></label>
+          <label class="field full">Nome (obrigatório)<input class="input" name="nome" required autocomplete="off" aria-describedby="pf-e-nome"></label>
+          <p class="err full" id="pf-e-nome" hidden>Escreve o nome do produto.</p>
+          <label class="field">Coleção<input class="input" name="colecao" autocomplete="off" placeholder="Ex: Romance Dawn · OP01"></label>
+          <label class="field" data-only="carta">Número na coleção<input class="input" name="numero" autocomplete="off" placeholder="Ex: 043"></label>
+          <label class="field" data-only="carta">Raridade<input class="input" name="raridade" autocomplete="off" placeholder="Ex: Rare Holo, Leader, SR"></label>
+          <label class="field" data-only="carta">Condição<select class="input" name="condicao" id="pf-cond"></select></label>
+          <label class="field" data-only="carta">Idioma<input class="input" name="idioma" autocomplete="off" placeholder="Ex: EN, PT, JP"></label>
+          <label class="field">Preço (R$) <small>Vazio = "sob consulta"</small><input class="input" name="preco" inputmode="decimal" autocomplete="off" placeholder="Ex: 34,90" aria-describedby="pf-e-preco"></label>
+          <p class="err full" id="pf-e-preco" hidden>Escreve só o número do preço, tipo 34,90.</p>
+          <label class="field">Quantidade em estoque<input class="input" name="estoque" type="number" min="0" step="1" inputmode="numeric" value="1"></label>
+          <div class="full" style="display:flex;flex-wrap:wrap;gap:16px;align-items:center">
+            <div class="preview" id="pf-prev"><span style="color:var(--light-muted);font-size:14px">Sem foto</span></div>
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <label class="btn btn-ghost" style="cursor:pointer">Escolher foto<input type="file" accept="image/*" id="pf-file" class="sr"></label>
+              <button type="button" class="btn btn-ghost" id="pf-nofoto">Remover foto</button>
+              <small style="color:var(--light-muted);max-width:300px">Box e booster: imagem oficial, salva do site da marca. Carta avulsa: foto do celular ou imagem oficial da carta. Se a imagem vier sem fundo, o painel marca "recortada" sozinho.</small>
+            </div>
+          </div>
+          <label class="check full"><input type="checkbox" name="recorte"> Foto recortada, sem fundo (o produto aparece solto na vitrine, só com a sombra)</label>
+          <label class="check full"><input type="checkbox" name="destaque"> Destaque do jogo (aparece no topo da página inicial quando a pessoa escolhe esse jogo)</label>
+          <p class="err full" id="pf-err" role="alert" hidden></p>
+          <div class="full" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between">
+            <button type="submit" class="btn btn-accent">Salvar produto</button>
+            <button type="button" class="btn btn-danger" id="pf-del" hidden>Apagar produto</button>
+          </div>
+        </div>
+      </form>
+    </section>
+
+    <!-- AGENDA -->
+    <section id="sec-agenda" role="tabpanel" hidden>
+      <div class="adm-bar"><h1>Agenda da semana</h1><button class="btn btn-accent" id="novo-ev">+ Novo evento</button></div>
+      <p style="margin:-8px 0 20px;color:var(--light-muted)">"Confirmado" aparece em roxo no site. "A confirmar" aparece discreto, pedindo pra pessoa chamar no WhatsApp antes.</p>
+      <div class="rows" id="ev-rows"></div>
+    </section>
+
+    <!-- JOGOS -->
+    <section id="sec-jogos" role="tabpanel" hidden>
+      <div class="adm-bar"><h1>Jogos do site</h1><button class="btn btn-accent" id="novo-jogo">+ Novo jogo</button></div>
+      <p style="margin:-8px 0 20px;color:var(--light-muted)">Jogo desligado some do menu e da loja, mas os produtos dele continuam guardados.</p>
+      <div class="rows" id="jg-rows"></div>
+    </section>
+
+    <!-- MATRÍCULAS -->
+    <section id="sec-matriculas" role="tabpanel" hidden>
+      <div class="adm-bar"><h1>Matrículas da escolinha</h1>
+        <label class="field" style="flex:0 1 220px">Mostrar<select class="input" id="m-filtro">
+          <option value="pendente">Pendentes</option><option value="confirmada">Confirmadas</option><option value="cancelada">Canceladas</option><option value="">Todas</option></select></label>
+      </div>
+      <p style="margin:-8px 0 20px;color:var(--light-muted)">Inscrições feitas pelo site. Conversa com o responsável no WhatsApp e confirma aqui com a data de início.</p>
+      <div class="rows" id="m-rows"></div>
+    </section>
+
+    <!-- HISTÓRICO -->
+    <section id="sec-historico" role="tabpanel" hidden>
+      <div class="adm-bar"><h1>Histórico</h1>
+        <label class="field" style="flex:0 1 240px">Quem mexeu<select class="input" id="h-quem"><option value="">Todo mundo</option></select></label>
+      </div>
+      <p style="margin:-8px 0 20px;color:var(--light-muted)">Tudo que alguém cria, muda ou apaga no painel fica anotado aqui, com nome e horário. O que foi apagado sem querer dá pra restaurar.</p>
+      <div class="rows" id="h-rows"></div>
+    </section>
+
+    <!-- DESEJOS -->
+    <section id="sec-desejos" role="tabpanel" hidden>
+      <div class="adm-bar"><h1>Lista de desejos</h1></div>
+      <p style="margin:-8px 0 20px;color:var(--light-muted)">Cartas que os clientes pediram pelo site. A pessoa também mandou mensagem no WhatsApp da loja.</p>
+      <div class="rows" id="ds-rows"></div>
+    </section>
+  </div></main>
+</div>
+
+<script src="assets/arena.js"></script>
+<script>
+(async function () {
+  const ST = ['novo', 'procurando', 'encontrada', 'avisado'];
+  const STN = { novo: 'Novo', procurando: 'Procurando', encontrada: 'Encontrada', avisado: 'Cliente avisado' };
+  if (DEMO) { $('#login-demo').hidden = false; $('#demo-note').hidden = false; }
+
+  async function start() {
+    const u = await DB.sessao();
+    let eu = null;
+    if (u) { try { eu = await DB.eu(); } catch (e) { eu = null; } }
+    if (u && !eu) { $('#login-fora').hidden = false; await DB.sair(); }
+    $('#login-view').hidden = !!eu; $('#app').hidden = !eu;
+    if (eu) { $('#quem').textContent = 'Olá, ' + eu.nome; await nomesJogos(); await fillJogoSelects(); renderProdutos(); contarPendentes(); }
+  }
+  /* trava de tentativas: 5 erros seguidos = 15 min sem poder tentar */
+  const TRAVA = 'arena_login_trava', MAX_ERROS = 5, ESPERA = 15 * 60 * 1000;
+  let relogio = null;
+  const travaLer = () => store.get(TRAVA, { erros: 0, ate: 0 });
+  function mostrarTrava() {
+    const t = travaLer(), btn = $('#login button[type=submit]'), msg = $('#login-err');
+    clearInterval(relogio);
+    if (!(t.ate > Date.now())) { btn.disabled = false; return false; }
+    btn.disabled = true; msg.hidden = false;
+    const tick = () => {
+      const falta = t.ate - Date.now();
+      if (falta <= 0) { clearInterval(relogio); btn.disabled = false; msg.hidden = true; return; }
+      const m = Math.floor(falta / 60000), s = Math.floor((falta % 60000) / 1000);
+      msg.textContent = 'Muitas tentativas erradas. Tenta de novo em ' + m + ':' + String(s).padStart(2, '0') + '.';
+    };
+    tick(); relogio = setInterval(tick, 1000);
+    return true;
+  }
+  mostrarTrava();
+  $('#login').addEventListener('submit', async (e) => {
+    e.preventDefault(); const f = e.target; $('#login-err').hidden = true; $('#login-fora').hidden = true;
+    if (mostrarTrava()) return;
+    if (!f.email.value.trim()) { $('#login-err').textContent = 'Escreve o e-mail.'; $('#login-err').hidden = false; f.email.focus(); return; }
+    try { await DB.login(f.email.value.trim(), f.senha.value); store.set(TRAVA, { erros: 0, ate: 0 }); start(); }
+    catch (err) {
+      if (err && err.status === 429) { store.set(TRAVA, { erros: 0, ate: Date.now() + ESPERA }); mostrarTrava(); return; }
+      const t = travaLer(); t.erros = (t.erros || 0) + 1;
+      if (t.erros >= MAX_ERROS) { store.set(TRAVA, { erros: 0, ate: Date.now() + ESPERA }); f.senha.value = ''; mostrarTrava(); return; }
+      store.set(TRAVA, t);
+      const resta = MAX_ERROS - t.erros;
+      $('#login-err').textContent = 'E-mail ou senha não conferem. ' + (resta <= 2 ? 'Mais ' + resta + (resta === 1 ? ' tentativa' : ' tentativas') + ' e o login trava por 15 minutos.' : 'Confere e tenta de novo.');
+      $('#login-err').hidden = false;
+    }
+  });
+  $('#sair').onclick = async () => { await DB.sair(); start(); };
+
+  /* abas */
+  $$('.tab').forEach((t) => t.addEventListener('click', () => {
+    $$('.tab').forEach((x) => x.setAttribute('aria-selected', x === t));
+    ['produtos', 'agenda', 'jogos', 'desejos', 'matriculas', 'historico'].forEach((s) => { $('#sec-' + s).hidden = s !== t.dataset.tab; });
+    ({ produtos: renderProdutos, agenda: renderAgenda, jogos: renderJogos, desejos: renderDesejos, matriculas: renderMatriculas, historico: renderHistorico })[t.dataset.tab]();
+  }));
+
+  /* apagar em dois toques (sem caixa de confirmação do navegador) */
+  function twoStep(btn, label, action) {
+    btn.addEventListener('click', async () => {
+      if (btn.dataset.armed) { await action(); return; }
+      btn.dataset.armed = '1'; const old = btn.textContent; btn.textContent = label;
+      setTimeout(() => { delete btn.dataset.armed; btn.textContent = old; }, 4000);
+    });
+  }
+
+  /* ---------- PRODUTOS ---------- */
+  async function fillJogoSelects() {
+    const js = await DB.jogos({ todos: true });
+    $('#p-jogo').innerHTML = '<option value="">Todos</option>' + js.map((j) => `<option value="${esc(j.id)}">${esc(j.nome)}</option>`).join('');
+    $('#pf-jogo').innerHTML = js.map((j) => `<option value="${esc(j.id)}">${esc(j.nome)}${j.visivel ? '' : ' (desligado)'}</option>`).join('');
+  }
+  $('#pf-cat').innerHTML = CATEGORIAS_LACRADO.map((c) => `<option>${c}</option>`).join('');
+  $('#pf-cond').innerHTML = CONDICOES.map((c) => `<option>${c}</option>`).join('');
+  ['p-busca', 'p-jogo', 'p-tipo', 'p-zerado'].forEach((id) => $('#' + id).addEventListener('input', renderProdutos));
+
+  async function renderProdutos() {
+    const ps = await DB.produtos({ jogo: $('#p-jogo').value || undefined, tipo: $('#p-tipo').value || undefined, busca: $('#p-busca').value.trim(), comEstoque: !$('#p-zerado').checked });
+    $('#p-count').textContent = ps.length + (ps.length === 1 ? ' produto' : ' produtos');
+    $('#p-rows').innerHTML = ps.map((p) => `<div class="row">
+      <div class="th">${media(p, { alt: false })}</div>
+      <div class="nm"><p><b>${esc(p.nome)}</b> ${p.destaque ? '<span class="pill on">Destaque</span>' : ''}</p><p class="s">${esc(tagLine(p))} · ${money(p.preco)}</p></div>
+      <div class="stepper" role="group" aria-label="Estoque de ${esc(p.nome)}"><button type="button" data-st="-1" data-id="${esc(p.id)}" aria-label="Tirar um do estoque">−</button><b>${p.estoque ?? 0}</b><button type="button" data-st="1" data-id="${esc(p.id)}" aria-label="Somar um no estoque">+</button></div>
+      <button type="button" class="btn btn-ghost" data-edit="${esc(p.id)}">Editar</button></div>`).join('') || '<p class="empty">Nenhum produto com esses filtros.</p>';
+  }
+  $('#p-rows').addEventListener('click', async (e) => {
+    const s = e.target.closest('[data-st]'), ed = e.target.closest('[data-edit]');
+    if (s) { const p = await DB.produto(s.dataset.id); p.estoque = Math.max(0, (p.estoque || 0) + Number(s.dataset.st)); await DB.salvar('produtos', { id: p.id, estoque: p.estoque }); s.parentElement.querySelector('b').textContent = p.estoque; toast(p.estoque === 0 ? p.nome + ' esgotou e saiu do site' : 'Estoque: ' + p.estoque); }
+    if (ed) openForm(await DB.produto(ed.dataset.edit));
+  });
+
+  let editing = null, foto = '';
+  function showTipo() { const t = $('#prod-form').tipo.value; $$('[data-only]', $('#prod-form')).forEach((el) => { el.hidden = el.dataset.only !== t; }); }
+  $$('input[name=tipo]').forEach((r) => r.addEventListener('change', showTipo));
+  function setPrev() { $('#pf-prev').innerHTML = foto ? `<img src="${esc(foto)}" alt="Foto do produto">` : '<span style="color:var(--light-muted);font-size:14px">Sem foto</span>'; $('#pf-nofoto').hidden = !foto; }
+  function openForm(p) {
+    editing = p; const f = $('#prod-form'); f.reset(); $('#pf-err').hidden = true; $('#pf-e-nome').hidden = true; $('#pf-e-preco').hidden = true;
+    $('#pf-title').textContent = p ? 'Editar produto' : 'Novo produto'; $('#pf-del').hidden = !p;
+    const d = p || { tipo: 'lacrado', jogo: $('#p-jogo').value || $('#pf-jogo').value, categoria: 'Booster', estoque: 1, condicao: CONDICOES[0], idioma: 'EN' };
+    f.tipo.value = d.tipo; f.jogo.value = d.jogo; f.categoria.value = d.categoria && d.categoria !== 'Carta' ? d.categoria : 'Booster';
+    ['nome', 'colecao', 'numero', 'raridade', 'idioma'].forEach((k) => { f[k].value = d[k] || ''; });
+    f.condicao.value = d.condicao || CONDICOES[0]; f.estoque.value = d.estoque ?? 1;
+    f.preco.value = d.preco != null ? String(d.preco).replace('.', ',') : ''; f.destaque.checked = !!d.destaque; f.recorte.checked = !!d.recorte;
+    foto = d.imagem || ''; setPrev(); showTipo();
+    $('#prod-list-view').hidden = true; f.hidden = false; f.nome.focus();
+  }
+  function closeForm() { $('#prod-form').hidden = true; $('#prod-list-view').hidden = false; renderProdutos(); }
+  $('#novo-prod').onclick = () => openForm(null);
+  $('#pf-cancel').onclick = closeForm;
+  $('#pf-nofoto').onclick = () => { foto = ''; setPrev(); };
+  $('#pf-file').addEventListener('change', async (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    $('#pf-prev').innerHTML = '<span style="font-size:14px">Carregando…</span>';
+    try { const r = await DB.enviarFoto(file); foto = r.url; if (r.recorte !== null) $('#prod-form').recorte.checked = r.recorte; setPrev(); } catch (err) { $('#pf-err').textContent = err.message || 'Não deu pra enviar a foto. Tenta outra.'; $('#pf-err').hidden = false; setPrev(); }
+    e.target.value = '';
+  });
+  $('#prod-form').addEventListener('submit', async (e) => {
+    e.preventDefault(); const f = e.target;
+    const nome = f.nome.value.trim(); $('#pf-e-nome').hidden = !!nome; f.nome.setAttribute('aria-invalid', !nome);
+    const pr = f.preco.value.trim().replace(/[R$\s]/g, '').replace(/\.(?=\d{3}(\D|$))/g, '').replace(',', '.');
+    const preco = pr === '' ? null : Number(pr); const precoOk = preco === null || (!isNaN(preco) && preco >= 0);
+    $('#pf-e-preco').hidden = precoOk; f.preco.setAttribute('aria-invalid', !precoOk);
+    if (!nome) { f.nome.focus(); return; } if (!precoOk) { f.preco.focus(); return; }
+    const tipo = f.tipo.value;
+    const row = { tipo, jogo: f.jogo.value, categoria: tipo === 'carta' ? 'Carta' : f.categoria.value, nome, colecao: f.colecao.value.trim(),
+      numero: tipo === 'carta' ? f.numero.value.trim() : '', raridade: tipo === 'carta' ? f.raridade.value.trim() : '',
+      condicao: tipo === 'carta' ? f.condicao.value : '', idioma: tipo === 'carta' ? f.idioma.value.trim() : '',
+      preco, estoque: Math.max(0, parseInt(f.estoque.value, 10) || 0), imagem: foto, recorte: f.recorte.checked && !!foto, destaque: f.destaque.checked };
+    if (editing) row.id = editing.id;
+    try { await DB.salvar('produtos', row); toast('Produto salvo'); closeForm(); }
+    catch (err) { $('#pf-err').textContent = 'Não salvou: ' + (err.message || 'erro desconhecido') + '. Tenta de novo.'; $('#pf-err').hidden = false; }
+  });
+  twoStep($('#pf-del'), 'Toca de novo pra apagar', async () => { await DB.apagar('produtos', editing.id); toast('Produto apagado'); closeForm(); });
+
+  /* ---------- AGENDA ---------- */
+  async function renderAgenda() {
+    const evs = await DB.eventos({ todos: true });
+    $('#ev-rows').innerHTML = evs.map((e) => `<form class="row" data-ev="${esc(e.id)}" style="align-items:flex-end">
+      <label class="field" style="flex:0 1 150px">Dia<select class="input" name="dia">${DIAS_LONGO.map((d, i) => `<option value="${i}" ${i === e.dia ? 'selected' : ''}>${d}</option>`).join('')}</select></label>
+      <label class="field" style="flex:1 1 220px">O que acontece<input class="input" name="titulo" value="${esc(e.titulo)}"></label>
+      <label class="field" style="flex:1 1 160px">Horário<input class="input" name="horario" value="${esc(e.horario || '')}"></label>
+      <label class="check"><input type="checkbox" name="confirmado" ${e.confirmado ? 'checked' : ''}> Confirmado</label>
+      <label class="check"><input type="checkbox" name="ativo" ${e.ativo ? 'checked' : ''}> Aparece no site</label>
+      <button class="btn btn-accent" type="submit">Salvar</button>
+      <button class="btn btn-ghost" type="button" data-del-ev>Apagar</button></form>`).join('') || '<p class="empty">Nenhum evento ainda.</p>';
+    $$('[data-ev]').forEach((f) => {
+      f.addEventListener('submit', async (e) => { e.preventDefault(); await DB.salvar('eventos', { id: f.dataset.ev, dia: Number(f.dia.value), titulo: f.titulo.value.trim(), horario: f.horario.value.trim(), confirmado: f.confirmado.checked, ativo: f.ativo.checked }); toast('Evento salvo'); });
+      twoStep($('[data-del-ev]', f), 'Toca de novo', async () => { await DB.apagar('eventos', f.dataset.ev); toast('Evento apagado'); renderAgenda(); });
+    });
+  }
+  $('#novo-ev').onclick = async () => { await DB.salvar('eventos', { dia: 6, titulo: 'Novo evento', horario: '', confirmado: false, ativo: false }); await renderAgenda(); const ins = $$('#ev-rows input[name=titulo]'); const last = ins.find((i) => i.value === 'Novo evento'); if (last) { last.focus(); last.select(); } };
+
+  /* ---------- JOGOS ---------- */
+  async function renderJogos() {
+    const js = await DB.jogos({ todos: true });
+    $('#jg-rows').innerHTML = js.map((j, i) => `<form class="row" data-jg="${esc(j.id)}" style="align-items:flex-end">
+      <label class="field" style="flex:1 1 220px">Nome do jogo<input class="input" name="nome" value="${esc(j.nome)}"></label>
+      <label class="check"><input type="checkbox" name="visivel" ${j.visivel ? 'checked' : ''}> Aparece no site</label>
+      <span style="display:flex;gap:6px"><button type="button" class="btn btn-ghost" data-mv="-1" ${i === 0 ? 'disabled' : ''} aria-label="Subir ${esc(j.nome)} na ordem">↑</button><button type="button" class="btn btn-ghost" data-mv="1" ${i === js.length - 1 ? 'disabled' : ''} aria-label="Descer ${esc(j.nome)} na ordem">↓</button></span>
+      <button class="btn btn-accent" type="submit">Salvar</button></form>`).join('');
+    $$('[data-jg]').forEach((f) => {
+      f.addEventListener('submit', async (e) => { e.preventDefault(); await DB.salvar('jogos', { id: f.dataset.jg, nome: f.nome.value.trim(), visivel: f.visivel.checked }); _jogosNome = {}; await nomesJogos(); await fillJogoSelects(); toast('Jogo salvo'); });
+      $$('[data-mv]', f).forEach((b) => b.addEventListener('click', async () => {
+        const i = js.findIndex((x) => x.id === f.dataset.jg), k = i + Number(b.dataset.mv); if (k < 0 || k >= js.length) return;
+        [js[i], js[k]] = [js[k], js[i]]; for (let n = 0; n < js.length; n++) await DB.salvar('jogos', { id: js[n].id, ordem: n + 1 });
+        renderJogos();
+      }));
+    });
+  }
+  $('#novo-jogo').onclick = async () => {
+    const js = await DB.jogos({ todos: true });
+    const nome = 'Novo jogo', id = 'jogo-' + uid();
+    await DB.salvar('jogos', { id, nome, visivel: false, ordem: js.length + 1 }); await renderJogos();
+    const inp = $(`[data-jg="${id}"] input[name=nome]`); if (inp) { inp.focus(); inp.select(); }
+  };
+
+  /* ---------- DESEJOS ---------- */
+  async function renderDesejos() {
+    const ds = await DB.desejos();
+    const novos = ds.filter((d) => d.status === 'novo').length; $('#n-des').hidden = !novos; $('#n-des').textContent = novos;
+    $('#ds-rows').innerHTML = ds.map((d) => `<div class="row">
+      <div class="nm"><p><b>${esc(d.carta)}</b>${d.versao ? ' · ' + esc(d.versao) : ''}</p><p class="s">Pedido por ${esc(d.nome)} em ${new Date(d.criado_em).toLocaleDateString('pt-BR')}</p></div>
+      <label class="field" style="flex:0 1 220px">Situação<select class="input" data-ds="${esc(d.id)}">${ST.map((s) => `<option value="${s}" ${s === d.status ? 'selected' : ''}>${STN[s]}</option>`).join('')}</select></label></div>`).join('') || '<p class="empty">Nenhum pedido na lista de desejos ainda.</p>';
+    $$('[data-ds]').forEach((s) => s.addEventListener('change', async () => { await DB.salvar('desejos', { id: s.dataset.ds, status: s.value }); toast('Situação atualizada'); renderDesejos(); }));
+  }
+
+  /* ---------- HISTÓRICO ---------- */
+  const TAB_NOME = { produtos: 'produto', eventos: 'evento da agenda', jogos: 'jogo', desejos: 'pedido da lista de desejos', matriculas: 'matrícula de' };
+  function quando(t) {
+    const d = new Date(t), hoje = new Date(), ontem = new Date(Date.now() - 864e5);
+    const hm = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    if (d.toDateString() === hoje.toDateString()) return 'Hoje, ' + hm;
+    if (d.toDateString() === ontem.toDateString()) return 'Ontem, ' + hm;
+    return d.toLocaleDateString('pt-BR') + ', ' + hm;
+  }
+  async function renderHistorico() {
+    const sel = $('#h-quem'), atual = sel.value;
+    const eq = await DB.equipe();
+    sel.innerHTML = '<option value="">Todo mundo</option>' + eq.map((p) => `<option value="${esc(p.email)}" ${p.email === atual ? 'selected' : ''}>${esc(p.nome)}</option>`).join('');
+    const hs = await DB.historico({ email: atual || undefined });
+    $('#h-rows').innerHTML = hs.map((h, i) => `<div class="row" style="align-items:flex-start">
+      <div class="nm"><p><b>${esc(h.nome || h.email)}</b> ${esc(h.acao)} ${esc(TAB_NOME[h.tabela] || h.tabela)} <b>${esc(h.item || '')}</b></p>
+        ${h.detalhes ? `<p class="s">${esc(h.detalhes).replace(/(\d{4})-(\d{2})-(\d{2})(?!\d)/g, '$3/$2/$1')}</p>` : ''}<p class="s">${quando(h.quando)}</p></div>
+      ${h.acao === 'apagou' && h.antes && h.tabela !== 'desejos' ? `<button type="button" class="btn btn-ghost" data-rest="${i}">Restaurar</button>` : ''}
+    </div>`).join('') || '<p class="empty">Nada registrado ainda.</p>';
+    $$('[data-rest]').forEach((b) => b.addEventListener('click', async () => {
+      try { await DB.restaurar(hs[Number(b.dataset.rest)]); toast('Restaurado'); renderHistorico(); }
+      catch (err) { toast('Não deu pra restaurar: ' + (err.message || 'erro')); }
+    }));
+  }
+  $('#h-quem').addEventListener('change', renderHistorico);
+
+  /* ---------- MATRÍCULAS ---------- */
+  const hojeISO = () => { const d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 10); };
+  const dataBR = (iso) => iso ? iso.split('-').reverse().join('/') : '';
+  const waNum = (n) => { const d = String(n || '').replace(/\D/g, ''); return d.length <= 11 ? '55' + d : d; };
+  async function contarPendentes() {
+    try { const ms = await DB.matriculas(); const n = ms.filter((m) => m.status === 'pendente').length; $('#n-mat').hidden = !n; $('#n-mat').textContent = n; } catch (e) {}
+  }
+  async function renderMatriculas() {
+    const filtro = $('#m-filtro').value;
+    const ms = (await DB.matriculas()).filter((m) => !filtro || m.status === filtro);
+    contarPendentes();
+    const pill = { pendente: '<span class="pill">Pendente</span>', confirmada: '<span class="pill on">Confirmada</span>', cancelada: '<span class="pill">Cancelada</span>' };
+    $('#m-rows').innerHTML = ms.map((m) => `<div class="row" data-m="${esc(m.id)}" style="align-items:flex-end">
+      <div class="nm" style="flex:1 1 300px">
+        <p><b>${esc(m.aluno)}</b>${m.idade ? ', ' + m.idade + ' anos' : ''} ${pill[m.status] || ''}</p>
+        <p class="s">Responsável: ${esc(m.responsavel)} · <a href="https://wa.me/${waNum(m.whatsapp)}" target="_blank" rel="noopener">${esc(m.whatsapp)}</a></p>
+        <p class="s">Escolinha de ${m.jogo === 'onepiece' ? 'One Piece' : 'Pokémon'} · inscrição em ${new Date(m.criado_em).toLocaleDateString('pt-BR')}${m.status === 'confirmada' && m.inicio ? ' · <b>começou em ' + dataBR(m.inicio) + '</b>' : ''}</p>
+        ${m.obs ? `<p class="s">“${esc(m.obs)}”</p>` : ''}
+      </div>
+      ${m.status === 'pendente' ? `<label class="field" style="flex:0 1 180px">Começa em<input class="input" type="date" name="inicio" value="${hojeISO()}"></label>
+        <button type="button" class="btn btn-accent" data-conf>Confirmar</button>` : ''}
+      ${m.status === 'confirmada' ? `<label class="field" style="flex:0 1 180px">Começou em<input class="input" type="date" name="inicio" value="${esc(m.inicio || '')}"></label>
+        <button type="button" class="btn btn-ghost" data-data>Salvar data</button>` : ''}
+      ${m.status !== 'cancelada' ? '<button type="button" class="btn btn-ghost" data-canc>Cancelar</button>' : '<button type="button" class="btn btn-ghost" data-reab>Voltar pra pendente</button>'}
+    </div>`).join('') || `<p class="empty">Nenhuma matrícula ${filtro ? (filtro === 'pendente' ? 'pendente' : filtro === 'confirmada' ? 'confirmada' : 'cancelada') : ''} agora.</p>`;
+    $$('[data-m]').forEach((r) => {
+      const id = r.dataset.m, inp = $('input[name=inicio]', r);
+      const b1 = $('[data-conf]', r); if (b1) b1.onclick = async () => { await DB.salvar('matriculas', { id, status: 'confirmada', inicio: inp.value || hojeISO() }); toast('Matrícula confirmada'); renderMatriculas(); };
+      const b2 = $('[data-data]', r); if (b2) b2.onclick = async () => { await DB.salvar('matriculas', { id, inicio: inp.value || null }); toast('Data salva'); renderMatriculas(); };
+      const b3 = $('[data-canc]', r); if (b3) twoStep(b3, 'Toca de novo pra cancelar', async () => { await DB.salvar('matriculas', { id, status: 'cancelada' }); toast('Matrícula cancelada'); renderMatriculas(); });
+      const b4 = $('[data-reab]', r); if (b4) b4.onclick = async () => { await DB.salvar('matriculas', { id, status: 'pendente', inicio: null }); toast('Voltou pra pendente'); renderMatriculas(); };
+    });
+  }
+  $('#m-filtro').addEventListener('change', renderMatriculas);
+
+  start();
+})();
+</script>
+</body>
+</html>
