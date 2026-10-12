@@ -31,6 +31,7 @@
     <span class="logo">ARENA<span>PRIME</span><small>PAINEL</small></span>
     <nav class="tabs" role="tablist" aria-label="Seções do painel">
       <button class="tab" role="tab" data-tab="produtos" aria-selected="true">Produtos</button>
+      <button class="tab" role="tab" data-tab="fornecedores" aria-selected="false">Fornecedores</button>
       <button class="tab" role="tab" data-tab="agenda" aria-selected="false">Agenda</button>
       <button class="tab" role="tab" data-tab="jogos" aria-selected="false">Jogos</button>
       <button class="tab" role="tab" data-tab="desejos" aria-selected="false">Lista de desejos <span class="cart-count" id="n-des" hidden></span></button>
@@ -101,10 +102,45 @@
       </form>
     </section>
 
+    <!-- FORNECEDORES -->
+    <section id="sec-fornecedores" role="tabpanel" hidden>
+      <div id="fo-list-view">
+        <div class="adm-bar"><h1>Fornecedores</h1><button class="btn btn-accent" id="novo-fo">+ Novo fornecedor</button></div>
+        <p style="margin:-8px 0 20px;color:var(--light-muted)">Quem vende pra loja, o que já foi comprado e quanto custou. Só a equipe vê esta parte, nada disso aparece no site.</p>
+        <div class="rows" id="fo-rows"></div>
+      </div>
+      <div id="fo-det" hidden>
+        <div class="adm-bar"><h1 id="fo-title">Novo fornecedor</h1><button type="button" class="btn btn-ghost" id="fo-voltar">Voltar pra lista</button></div>
+        <form class="form-card" id="fo-form" novalidate>
+          <label class="field">Nome (obrigatório)<input class="input" name="nome" required autocomplete="off" maxlength="80"></label>
+          <label class="field">WhatsApp<input class="input" name="whatsapp" inputmode="tel" autocomplete="off" placeholder="Ex: 48 99999-9999" maxlength="30"></label>
+          <label class="field full">O que vende<input class="input" name="vende" autocomplete="off" placeholder="Ex: Booster box de One Piece, sleeves" maxlength="200"></label>
+          <label class="field full">Mensagem pra pedir <small>O que já vai escrito quando abrir o WhatsApp</small><textarea class="input" name="mensagem" rows="3" maxlength="500"></textarea></label>
+          <p class="err full" id="fo-err" role="alert" hidden></p>
+          <div class="full" style="display:flex;flex-wrap:wrap;gap:10px;justify-content:space-between">
+            <span style="display:flex;flex-wrap:wrap;gap:10px"><button type="submit" class="btn btn-accent">Salvar fornecedor</button><a class="btn btn-ghost" id="fo-wa" target="_blank" rel="noopener" hidden>Pedir no WhatsApp</a></span>
+            <button type="button" class="btn btn-danger" id="fo-del" hidden>Apagar fornecedor</button>
+          </div>
+        </form>
+        <div id="fo-compras" hidden>
+          <div class="adm-bar"><h2 style="margin:0">Compras</h2><p id="fo-total" style="margin:0;font-weight:700"></p></div>
+          <form class="form-card" id="cp-form" novalidate style="margin-bottom:16px">
+            <label class="field">Data<input class="input" type="date" name="data"></label>
+            <label class="field">Quanto pagou (R$)<input class="input" name="valor" inputmode="decimal" autocomplete="off" placeholder="Ex: 1.300,00"></label>
+            <label class="field full">O que comprou (obrigatório)<input class="input" name="titulo" autocomplete="off" placeholder="Ex: 2 booster box OP17 + 1 caixa de sleeves" maxlength="300"></label>
+            <label class="field full">Observação<input class="input" name="obs" autocomplete="off" placeholder="Ex: pago no pix, chega sexta" maxlength="300"></label>
+            <p class="err full" id="cp-err" role="alert" hidden></p>
+            <div class="full"><button type="submit" class="btn btn-accent">Anotar compra</button></div>
+          </form>
+          <div class="rows" id="cp-rows"></div>
+        </div>
+      </div>
+    </section>
+
     <!-- AGENDA -->
     <section id="sec-agenda" role="tabpanel" hidden>
       <div class="adm-bar"><h1>Agenda da semana</h1><button class="btn btn-accent" id="novo-ev">+ Novo evento</button></div>
-      <p style="margin:-8px 0 20px;color:var(--light-muted)">"Confirmado" aparece em roxo no site. "A confirmar" aparece discreto, pedindo pra pessoa chamar no WhatsApp antes.</p>
+      <p style="margin:-8px 0 20px;color:var(--light-muted)">Cada linha é um evento. "Confirmado" aparece em roxo no site; sem marcar, aparece discreto, pedindo pra pessoa chamar no WhatsApp antes. Pra tirar do site por uns dias, desmarque "Aparece no site" em vez de apagar.</p>
       <div class="rows" id="ev-rows"></div>
     </section>
 
@@ -197,8 +233,8 @@
   /* abas */
   $$('.tab').forEach((t) => t.addEventListener('click', () => {
     $$('.tab').forEach((x) => x.setAttribute('aria-selected', x === t));
-    ['produtos', 'agenda', 'jogos', 'desejos', 'matriculas', 'historico'].forEach((s) => { $('#sec-' + s).hidden = s !== t.dataset.tab; });
-    ({ produtos: renderProdutos, agenda: renderAgenda, jogos: renderJogos, desejos: renderDesejos, matriculas: renderMatriculas, historico: renderHistorico })[t.dataset.tab]();
+    ['produtos', 'fornecedores', 'agenda', 'jogos', 'desejos', 'matriculas', 'historico'].forEach((s) => { $('#sec-' + s).hidden = s !== t.dataset.tab; });
+    ({ produtos: renderProdutos, fornecedores: renderFornecedores, agenda: renderAgenda, jogos: renderJogos, desejos: renderDesejos, matriculas: renderMatriculas, historico: renderHistorico })[t.dataset.tab]();
   }));
 
   /* apagar em dois toques (sem caixa de confirmação do navegador) */
@@ -278,20 +314,114 @@
   });
   twoStep($('#pf-del'), 'Toca de novo pra apagar', async () => { await DB.apagar('produtos', editing.id); toast('Produto apagado'); closeForm(); });
 
+  /* ---------- FORNECEDORES ---------- */
+  const msgPadrao = (fo) => 'Oi' + (fo.nome ? ', ' + fo.nome.split(' ')[0] : '') + '! Aqui é da Arena Prime. Queria fazer um pedido:';
+  const waFornecedor = (fo, extra) => {
+    const n = String(fo.whatsapp || '').replace(/\D/g, ''); if (n.length < 10) return '';
+    const msg = (fo.mensagem || '').trim() || msgPadrao(fo);
+    return 'https://wa.me/' + waNum(n) + '?text=' + encodeURIComponent(extra ? msg + '\n\n' + extra : msg);
+  };
+  const lerValor = (v) => { const t = String(v || '').trim().replace(/[R$\s]/g, '').replace(/\.(?=\d{3}(\D|$))/g, '').replace(',', '.'); if (t === '') return null; const n = Number(t); return isNaN(n) || n < 0 ? NaN : n; };
+  const mesAtual = () => hojeISO().slice(0, 7);
+  let foAtual = null;
+
+  async function renderFornecedores() {
+    $('#fo-det').hidden = true; $('#fo-list-view').hidden = false;
+    const [fs, cs] = await Promise.all([DB.lista('fornecedores', 'nome'), DB.lista('compras', 'data')]);
+    $('#fo-rows').innerHTML = fs.map((fo) => {
+      const minhas = cs.filter((c) => c.fornecedor === fo.id), ult = minhas[0];
+      const mes = minhas.filter((c) => String(c.data).startsWith(mesAtual())).reduce((s, c) => s + (Number(c.valor) || 0), 0);
+      const wa = waFornecedor(fo);
+      return `<div class="row">
+        <div class="nm"><p><b>${esc(fo.nome)}</b></p>
+          <p class="s">${esc(fo.vende || 'Sem descrição')}${fo.whatsapp ? ' · ' + esc(fo.whatsapp) : ''}</p>
+          <p class="s">${ult ? 'Última compra em ' + dataBR(String(ult.data)) + (mes ? ' · este mês: ' + money(mes) : '') : 'Nenhuma compra anotada'}</p></div>
+        ${wa ? `<a class="btn btn-accent" href="${esc(wa)}" target="_blank" rel="noopener">Pedir no WhatsApp</a>` : ''}
+        <button type="button" class="btn btn-ghost" data-fo="${esc(fo.id)}">Abrir</button></div>`;
+    }).join('') || '<p class="empty">Nenhum fornecedor cadastrado ainda.</p>';
+  }
+  $('#fo-rows').addEventListener('click', async (e) => {
+    const b = e.target.closest('[data-fo]'); if (!b) return;
+    const fs = await DB.lista('fornecedores', 'nome'); abrirFornecedor(fs.find((x) => x.id === b.dataset.fo) || null);
+  });
+  $('#novo-fo').onclick = () => abrirFornecedor(null);
+  $('#fo-voltar').onclick = renderFornecedores;
+
+  function abrirFornecedor(fo) {
+    foAtual = fo; const f = $('#fo-form'); f.reset(); $('#fo-err').hidden = true; $('#cp-err').hidden = true;
+    $('#fo-title').textContent = fo ? fo.nome : 'Novo fornecedor';
+    f.nome.value = fo ? fo.nome : ''; f.whatsapp.value = fo ? fo.whatsapp || '' : ''; f.vende.value = fo ? fo.vende || '' : '';
+    f.mensagem.value = fo ? fo.mensagem || '' : ''; f.mensagem.placeholder = msgPadrao(fo || {});
+    $('#fo-del').hidden = !fo; $('#fo-compras').hidden = !fo; atualizarWa();
+    $('#fo-list-view').hidden = true; $('#fo-det').hidden = false;
+    if (fo) { $('#cp-form').data.value = hojeISO(); renderCompras(); } else f.nome.focus();
+  }
+  function atualizarWa() {
+    const f = $('#fo-form'), wa = waFornecedor({ nome: f.nome.value.trim(), whatsapp: f.whatsapp.value, mensagem: f.mensagem.value });
+    $('#fo-wa').hidden = !wa || !foAtual; if (wa) $('#fo-wa').href = wa;
+    f.mensagem.placeholder = msgPadrao({ nome: f.nome.value.trim() });
+  }
+  $('#fo-form').addEventListener('input', atualizarWa);
+  $('#fo-form').addEventListener('submit', async (e) => {
+    e.preventDefault(); const f = e.target, nome = f.nome.value.trim();
+    if (!nome) { $('#fo-err').textContent = 'Escreve o nome do fornecedor.'; $('#fo-err').hidden = false; f.nome.focus(); return; }
+    const zap = f.whatsapp.value.replace(/\D/g, '');
+    if (zap && zap.length < 10) { $('#fo-err').textContent = 'O WhatsApp precisa ter DDD + número, tipo 48 99999-9999.'; $('#fo-err').hidden = false; f.whatsapp.focus(); return; }
+    const row = { nome, whatsapp: f.whatsapp.value.trim(), vende: f.vende.value.trim(), mensagem: f.mensagem.value.trim() };
+    if (foAtual) row.id = foAtual.id;
+    try { const salvo = await DB.salvar('fornecedores', row); toast('Fornecedor salvo'); abrirFornecedor({ ...(foAtual || {}), ...salvo }); }
+    catch (err) { $('#fo-err').textContent = 'Não salvou: ' + (err.message || 'erro desconhecido') + '. Tenta de novo.'; $('#fo-err').hidden = false; }
+  });
+  twoStep($('#fo-del'), 'Toca de novo pra apagar', async () => { await DB.apagar('fornecedores', foAtual.id); toast('Fornecedor apagado. Dá pra recuperar no Histórico.'); renderFornecedores(); });
+
+  async function renderCompras() {
+    const cs = (await DB.lista('compras', 'data')).filter((c) => c.fornecedor === foAtual.id);
+    const total = cs.reduce((s, c) => s + (Number(c.valor) || 0), 0), mes = cs.filter((c) => String(c.data).startsWith(mesAtual())).reduce((s, c) => s + (Number(c.valor) || 0), 0);
+    $('#fo-total').textContent = cs.length ? 'Este mês: ' + money(mes) + ' · Total: ' + money(total) : '';
+    $('#cp-rows').innerHTML = cs.map((c) => {
+      const wa = waFornecedor(foAtual, c.titulo);
+      return `<div class="row" data-cp="${esc(c.id)}">
+        <div class="nm"><p><b>${esc(c.titulo)}</b></p><p class="s">${dataBR(String(c.data))} · ${c.valor != null ? money(c.valor) : 'valor não anotado'}${c.obs ? ' · ' + esc(c.obs) : ''}</p></div>
+        ${wa ? `<a class="btn btn-ghost" href="${esc(wa)}" target="_blank" rel="noopener">Pedir de novo</a>` : ''}
+        <button type="button" class="btn btn-ghost" data-del-cp>Apagar</button></div>`;
+    }).join('') || '<p class="empty">Nenhuma compra anotada ainda.</p>';
+    $$('[data-cp]').forEach((r) => twoStep($('[data-del-cp]', r), 'Toca de novo', async () => { await DB.apagar('compras', r.dataset.cp); toast('Compra apagada'); renderCompras(); }));
+  }
+  $('#cp-form').addEventListener('submit', async (e) => {
+    e.preventDefault(); const f = e.target, titulo = f.titulo.value.trim(), valor = lerValor(f.valor.value);
+    $('#cp-err').hidden = true;
+    if (!titulo) { $('#cp-err').textContent = 'Escreve o que foi comprado.'; $('#cp-err').hidden = false; f.titulo.focus(); return; }
+    if (Number.isNaN(valor)) { $('#cp-err').textContent = 'Escreve só o número do valor, tipo 1.300,00.'; $('#cp-err').hidden = false; f.valor.focus(); return; }
+    try {
+      await DB.salvar('compras', { fornecedor: foAtual.id, data: f.data.value || hojeISO(), titulo, valor, obs: f.obs.value.trim() });
+      toast('Compra anotada'); f.reset(); f.data.value = hojeISO(); renderCompras();
+    } catch (err) { $('#cp-err').textContent = 'Não salvou: ' + (err.message || 'erro desconhecido') + '. Tenta de novo.'; $('#cp-err').hidden = false; }
+  });
+
   /* ---------- AGENDA ---------- */
+  function previaEvento(f) {
+    if (!f.ativo.checked) return '<b>Escondido:</b> não aparece no site agora.';
+    const h = f.horario.value.trim();
+    return '<b>No site:</b> ' + esc(DIAS_LONGO[Number(f.dia.value)]) + ' · ' + esc(f.titulo.value.trim() || 'sem nome') + (h ? ' · ' + esc(h) : '') + ' · ' + (f.confirmado.checked ? 'confirmado (em roxo)' : 'a confirmar (discreto)');
+  }
   async function renderAgenda() {
     const evs = await DB.eventos({ todos: true });
-    $('#ev-rows').innerHTML = evs.map((e) => `<form class="row" data-ev="${esc(e.id)}" style="align-items:flex-end">
+    $('#ev-rows').innerHTML = evs.map((e) => `<form class="row" data-ev="${esc(e.id)}" style="align-items:flex-end;flex-wrap:wrap">
       <label class="field" style="flex:0 1 150px">Dia<select class="input" name="dia">${DIAS_LONGO.map((d, i) => `<option value="${i}" ${i === e.dia ? 'selected' : ''}>${d}</option>`).join('')}</select></label>
-      <label class="field" style="flex:1 1 220px">O que acontece<input class="input" name="titulo" value="${esc(e.titulo)}"></label>
-      <label class="field" style="flex:1 1 160px">Horário<input class="input" name="horario" value="${esc(e.horario || '')}"></label>
+      <label class="field" style="flex:1 1 180px">O que acontece<input class="input" name="titulo" value="${esc(e.titulo)}"></label>
+      <label class="field" style="flex:1 1 110px">Horário<input class="input" name="horario" value="${esc(e.horario || '')}"></label>
       <label class="check"><input type="checkbox" name="confirmado" ${e.confirmado ? 'checked' : ''}> Confirmado</label>
-      <label class="check"><input type="checkbox" name="ativo" ${e.ativo ? 'checked' : ''}> Aparece no site</label>
-      <button class="btn btn-accent" type="submit">Salvar</button>
-      <button class="btn btn-ghost" type="button" data-del-ev>Apagar</button></form>`).join('') || '<p class="empty">Nenhum evento ainda.</p>';
+      <label class="check" title="Desmarque pra esconder sem apagar"><input type="checkbox" name="ativo" ${e.ativo ? 'checked' : ''}> Aparece no site</label>
+      <button class="btn btn-accent" type="submit" disabled>Salvo</button>
+      <button class="btn btn-ghost" type="button" data-del-ev>Apagar evento</button>
+      <p class="s" data-prev style="flex:1 1 100%;margin:4px 0 0;color:var(--light-muted)"></p></form>`).join('') || '<p class="empty">Nenhum evento ainda.</p>';
     $$('[data-ev]').forEach((f) => {
-      f.addEventListener('submit', async (e) => { e.preventDefault(); await DB.salvar('eventos', { id: f.dataset.ev, dia: Number(f.dia.value), titulo: f.titulo.value.trim(), horario: f.horario.value.trim(), confirmado: f.confirmado.checked, ativo: f.ativo.checked }); toast('Evento salvo'); });
-      twoStep($('[data-del-ev]', f), 'Toca de novo', async () => { await DB.apagar('eventos', f.dataset.ev); toast('Evento apagado'); renderAgenda(); });
+      const btn = $('button[type=submit]', f), prev = $('[data-prev]', f);
+      const mudou = () => { btn.disabled = false; btn.textContent = 'Salvar mudança'; prev.innerHTML = previaEvento(f); };
+      prev.innerHTML = previaEvento(f);
+      f.addEventListener('input', mudou); f.addEventListener('change', mudou);
+      f.addEventListener('submit', async (e) => { e.preventDefault(); await DB.salvar('eventos', { id: f.dataset.ev, dia: Number(f.dia.value), titulo: f.titulo.value.trim(), horario: f.horario.value.trim(), confirmado: f.confirmado.checked, ativo: f.ativo.checked }); btn.disabled = true; btn.textContent = 'Salvo'; toast('Evento salvo'); });
+      twoStep($('[data-del-ev]', f), 'Toca de novo pra apagar', async () => { await DB.apagar('eventos', f.dataset.ev); toast('Evento apagado. Dá pra recuperar no Histórico.'); renderAgenda(); });
     });
   }
   $('#novo-ev').onclick = async () => { await DB.salvar('eventos', { dia: 6, titulo: 'Novo evento', horario: '', confirmado: false, ativo: false }); await renderAgenda(); const ins = $$('#ev-rows input[name=titulo]'); const last = ins.find((i) => i.value === 'Novo evento'); if (last) { last.focus(); last.select(); } };
@@ -331,7 +461,7 @@
   }
 
   /* ---------- HISTÓRICO ---------- */
-  const TAB_NOME = { produtos: 'produto', eventos: 'evento da agenda', jogos: 'jogo', desejos: 'pedido da lista de desejos', matriculas: 'matrícula de' };
+  const TAB_NOME = { produtos: 'produto', eventos: 'evento da agenda', jogos: 'jogo', desejos: 'pedido da lista de desejos', matriculas: 'matrícula de', fornecedores: 'fornecedor', compras: 'compra' };
   function quando(t) {
     const d = new Date(t), hoje = new Date(), ontem = new Date(Date.now() - 864e5);
     const hm = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });

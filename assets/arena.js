@@ -70,7 +70,7 @@ function seed() {
     desejos: []
   };
 }
-const demoDb = () => { let d = store.get(DEMO_KEY, null); if (!d) { d = seed(); store.set(DEMO_KEY, d); } d.matriculas = d.matriculas || []; d.historico = d.historico || []; return d; };
+const demoDb = () => { let d = store.get(DEMO_KEY, null); if (!d) { d = seed(); store.set(DEMO_KEY, d); } d.matriculas = d.matriculas || []; d.historico = d.historico || []; d.fornecedores = d.fornecedores || []; d.compras = d.compras || []; return d; };
 const demoSave = (d) => store.set(DEMO_KEY, d);
 const ROTULOS = { estoque: 'estoque', preco: 'preço', nome: 'nome', destaque: 'destaque', imagem: 'foto', colecao: 'coleção', condicao: 'condição', idioma: 'idioma', categoria: 'tipo', jogo: 'jogo', titulo: 'título', horario: 'horário', dia: 'dia', confirmado: 'confirmado', ativo: 'aparece no site', visivel: 'aparece no site', ordem: 'ordem', status: 'situação' };
 function demoLog(db, acao, tabela, antes, depois) {
@@ -171,6 +171,10 @@ const DB = {
     if (DEMO) { const db = demoDb(), antes = db[tabela].find((x) => x.id === id); db[tabela] = db[tabela].filter((x) => x.id !== id); if (antes) demoLog(db, 'apagou', tabela, antes, null); demoSave(db); return; }
     must(await (await sb()).from(tabela).delete().eq('id', id));
   },
+  async lista(tabela, ordem) {
+    if (DEMO) { const l = (demoDb()[tabela] || []).slice(); return ordem === 'nome' ? l.sort((a, b) => String(a.nome).localeCompare(b.nome)) : l.sort((a, b) => String(b[ordem] || '').localeCompare(String(a[ordem] || ''))); }
+    return must(await (await sb()).from(tabela).select('*').order(ordem, { ascending: ordem === 'nome' }));
+  },
   async desejos() {
     if (DEMO) return demoDb().desejos;
     return must(await (await sb()).from('desejos').select('*').order('criado_em', { ascending: false }));
@@ -228,10 +232,24 @@ function shrinkImage(file, max) {
       const im = new Image();
       im.onerror = () => fail(new Error('Esse arquivo não parece ser uma foto'));
       im.onload = () => {
-        const s = Math.min(1, max / Math.max(im.width, im.height));
-        const cv = document.createElement('canvas'); cv.width = Math.round(im.width * s); cv.height = Math.round(im.height * s);
-        const ctx = cv.getContext('2d'); ctx.drawImage(im, 0, 0, cv.width, cv.height);
-        const transparente = cantosTransparentes(ctx, cv.width, cv.height);
+        // 1) lê a imagem inteira (até 2400px) pra achar sobra transparente em volta
+        const s0 = Math.min(1, 2400 / Math.max(im.width, im.height));
+        const c0 = document.createElement('canvas'); c0.width = Math.round(im.width * s0); c0.height = Math.round(im.height * s0);
+        const x0 = c0.getContext('2d'); x0.drawImage(im, 0, 0, c0.width, c0.height);
+        const transparente = cantosTransparentes(x0, c0.width, c0.height);
+        let sx = 0, sy = 0, sw = c0.width, sh = c0.height;
+        if (transparente) {
+          // 2) recorte sem fundo: corta a margem vazia pra o produto ocupar a placa inteira
+          try {
+            const d = x0.getImageData(0, 0, c0.width, c0.height).data; let x1 = c0.width, y1 = c0.height, x2 = -1, y2 = -1;
+            for (let y = 0; y < c0.height; y++) for (let x = 0; x < c0.width; x++) if (d[(y * c0.width + x) * 4 + 3] > 12) { if (x < x1) x1 = x; if (x > x2) x2 = x; if (y < y1) y1 = y; if (y > y2) y2 = y; }
+            if (x2 > x1 && y2 > y1) { const pad = Math.round(Math.max(x2 - x1, y2 - y1) * 0.03); sx = Math.max(0, x1 - pad); sy = Math.max(0, y1 - pad); sw = Math.min(c0.width, x2 + pad + 1) - sx; sh = Math.min(c0.height, y2 + pad + 1) - sy; }
+          } catch (e) { /* imagem de outro site sem permissão: segue sem cortar */ }
+        }
+        // 3) reduz pro tamanho final
+        const s = Math.min(1, max / Math.max(sw, sh));
+        const cv = document.createElement('canvas'); cv.width = Math.round(sw * s); cv.height = Math.round(sh * s);
+        const ctx = cv.getContext('2d'); ctx.drawImage(c0, sx, sy, sw, sh, 0, 0, cv.width, cv.height);
         const dataUrl = cv.toDataURL('image/webp', 0.85);
         cv.toBlob((blob) => ok({ dataUrl, blob, transparente }), 'image/webp', 0.85);
       };

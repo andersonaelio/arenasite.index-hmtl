@@ -447,3 +447,11 @@ body.adm::before{display:none}
 .stage img.cut{border-radius:0;box-shadow:none;filter:drop-shadow(0 26px 26px rgba(40,10,80,.32)) drop-shadow(0 6px 8px rgba(0,0,0,.16))}
 .feat-stage img.photo,.pj-hero .stage img.photo{transform:rotate(-2deg)}
 .feat-stage img.cut{max-width:98%!important;max-height:96%!important}
+
+/* destaque do topo: imagem em cima, ocupando a largura da placa (12/out) */
+.feat-main{flex-direction:column;align-items:stretch;gap:18px}
+.feat-stage{flex:none!important;width:100%;max-width:none!important;aspect-ratio:auto!important;height:clamp(240px,26vw,360px);margin:0!important}
+.feat-info{flex:none}
+/* painel: link com cara de botão roxo e botão "Salvo" apagado (12/out) */
+a.btn.btn-accent,a.btn.btn-accent:hover,a.btn.btn-accent:visited{color:#fff}
+.btn.btn-accent:disabled{background:transparent;color:var(--light-muted);box-shadow:inset 0 0 0 2px rgba(20,15,31,.12);cursor:default}
