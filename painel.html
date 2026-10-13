@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/icon-180.png">
 <link rel="stylesheet" href="assets/arena.css">
 </head>
 <body class="adm light">
@@ -15,7 +16,7 @@
 
 <div id="login-view" hidden>
   <form class="login form-card" id="login" style="display:flex;flex-direction:column" novalidate>
-    <p class="logo" style="color:var(--light-ink)">ARENA<span style="color:var(--accent)">PRIME</span> <small style="color:var(--light-muted)">PAINEL</small></p>
+    <div style="background:#0B0A10;border-radius:14px;padding:22px;display:flex;justify-content:center;margin-bottom:6px"><img src="assets/logo.svg" alt="Arena Prime" width="190" height="162"></div>
     <h1>Entrar</h1>
     <p class="demo-note" id="login-demo" hidden>Modo demonstração: qualquer e-mail entra, e o que você mudar fica salvo só neste navegador.</p>
     <label class="field">E-mail<input class="input" type="email" name="email" autocomplete="username" inputmode="email" required></label>
@@ -28,7 +29,7 @@
 
 <div id="app" hidden>
   <header class="adm-top"><div class="wrap">
-    <span class="logo">ARENA<span>PRIME</span><small>PAINEL</small></span>
+    <span class="logo" style="display:flex;align-items:center;gap:12px"><img src="assets/logo-wordmark.svg" alt="Arena Prime" width="128" height="32"><small style="margin:0;letter-spacing:.2em;font-size:13px">PAINEL</small></span>
     <nav class="tabs" role="tablist" aria-label="Seções do painel">
       <button class="tab" role="tab" data-tab="produtos" aria-selected="true">Produtos</button>
       <button class="tab" role="tab" data-tab="fornecedores" aria-selected="false">Fornecedores</button>

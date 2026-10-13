@@ -8,11 +8,14 @@
 <meta property="og:type" content="website">
 <meta property="og:title" content="Arena Prime · Loja de card game em Florianópolis">
 <meta property="og:description" content="One Piece, Pokémon, Magic e board games. Veja o que chegou e feche o pedido pelo WhatsApp.">
-<meta property="og:image" content="assets/img/og.jpg">
+<meta property="og:image" content="https://arenasiteindex-hmtl.vercel.app/assets/img/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta name="theme-color" content="#111111">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="assets/icon-180.png">
 <link rel="stylesheet" href="assets/arena.css">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Store","name":"Arena Prime","address":{"@type":"PostalAddress","streetAddress":"R. Ver. Osvaldo Bittencourt, 637","addressLocality":"Florianópolis","addressRegion":"SC","postalCode":"88047-700","addressCountry":"BR"},"telephone":"+55 48 99963-0724","openingHours":["Mo-Su 10:00-12:00","Mo-Su 14:00-22:00"],"sameAs":["https://instagram.com/arenaprimefloripa"]}</script>
 </head>
@@ -57,9 +60,9 @@
     </div>
   </section>
 
-  <section class="band por-jogo" id="por-jogo" aria-label="Produtos por jogo" hidden>
-    <div class="panel light" id="pj-panel"></div>
-  </section>
+  <div class="por-jogo" id="por-jogo" hidden>
+    <div id="pj-panel"></div>
+  </div>
 
   <section class="agenda" id="agenda" aria-labelledby="agenda-t">
     <div class="wrap">
@@ -236,42 +239,55 @@
   // por jogo, em três níveis: a cereja (maior valor), o bolo (outros lacrados), o glacê (cartas avulsas)
   const RANK = { 'Booster box': 6, 'Box': 5, 'Jogo de tabuleiro': 4, 'Double Pack': 3, 'Deck pronto': 3, 'Booster': 2, 'Acessório': 1 };
   const peso = (p) => (p.preco || 0) * 1000 + (RANK[p.categoria] || 0) + (p.destaque ? 1e9 : 0);
-  const midHTML = (p) => { const url = 'produto.html?id=' + encodeURIComponent(p.id); return `<article class="pj-mid-item" role="listitem">
-      <a class="stage" href="${url}" tabindex="-1" aria-hidden="true">${media(p, { alt: false })}<span class="qty-badge">${p.estoque} unid.</span></a>
-      <p class="tag">${esc((p.categoria || '').toUpperCase())}</p><h4><a href="${url}">${esc(p.nome)}</a></h4>
-      <div class="pj-mid-foot"><span class="price">${p.preco == null ? 'Sob consulta' : money(p.preco)}</span>
-      <button type="button" class="add" data-add="${esc(p.id)}" aria-label="Colocar ${esc(p.nome)} no pedido">+ Pedido</button></div></article>`; };
-  const miniHTML = (p) => { const url = 'produto.html?id=' + encodeURIComponent(p.id); return `<article class="pj-mini" role="listitem">
-      <a class="pj-mini-img" href="${url}" tabindex="-1" aria-hidden="true">${media(p, { alt: false })}</a>
-      <div><h4><a href="${url}">${esc(p.nome)}</a></h4><p class="pj-mini-s">${esc([p.colecao, (p.condicao || '').split(' ·')[0]].filter(Boolean).join(' · '))} · ${p.estoque} unid.</p>
-      <p class="pj-mini-p">${p.preco == null ? 'Sob consulta' : money(p.preco)}</p></div>
-      <button type="button" class="pj-mini-add" data-add="${esc(p.id)}" aria-label="Colocar ${esc(p.nome)} no pedido">+</button></article>`; };
+  const precoTxt = (p) => p.preco == null ? 'Sob consulta' : money(p.preco);
+  const qtd = (p) => p.estoque === 1 ? 'Última unidade' : p.estoque + ' unid.';
+  const evsJogo = await DB.eventos().catch(() => []);
+  const linhaJogo = (j) => {
+    const nome = j.nome.toLowerCase();
+    const ev = evsJogo.find((e) => (e.titulo || '').toLowerCase().includes(nome) && e.confirmado) || evsJogo.find((e) => (e.titulo || '').toLowerCase().includes(nome));
+    if (ev) return `<p class="pjx-ev">Pra jogar na Arena: <b>${esc(ev.titulo)}</b> <span>${esc(DIAS_LONGO[ev.dia].toLowerCase())}${ev.horario ? ', ' + esc(ev.horario) : ''} · ${ev.confirmado ? 'confirmado' : 'a confirmar, chama no WhatsApp antes'}</span></p>`;
+    if (j.id === 'pokemon') return `<p class="pjx-ev">Pra aprender: <a href="#escolinha"><b>Escolinha de Pokémon na Arena</b></a></p>`;
+    return '';
+  };
+  const midHTML = (p) => { const url = 'produto.html?id=' + encodeURIComponent(p.id); return `<article class="pjx-mid" role="listitem">
+      <a class="stage" href="${url}" tabindex="-1" aria-hidden="true">${media(p, { alt: false })}</a>
+      <h4><a href="${url}">${esc(p.nome)}</a></h4>
+      <div class="pjx-mid-foot"><span class="pjx-price">${precoTxt(p)}</span>
+      <button type="button" class="pjx-plus" data-add="${esc(p.id)}" aria-label="Colocar ${esc(p.nome)} no pedido"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div></article>`; };
+  const cardHTML = (p) => { const url = 'produto.html?id=' + encodeURIComponent(p.id); return `<article class="pjx-card" role="listitem">
+      <a class="pjx-card-img" href="${url}" tabindex="-1" aria-hidden="true">${media(p, { alt: false })}<span class="qty-badge">${qtd(p)}</span></a>
+      <h4><a href="${url}">${esc(p.nome)}</a></h4>
+      <div class="pjx-card-foot"><span class="pjx-price">${precoTxt(p)}</span>
+      <button type="button" class="pjx-plus" data-add="${esc(p.id)}" aria-label="Colocar ${esc(p.nome)} no pedido"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div></article>`; };
   const pj = comEstoque.map((j) => {
     const ps = todosProdutos.filter((p) => p.jogo === j.id);
     const lac = ps.filter((p) => p.tipo === 'lacrado').sort((a, b) => peso(b) - peso(a));
     const car = ps.filter((p) => p.tipo === 'carta').sort((a, b) => (b.preco || 0) - (a.preco || 0));
     const top = lac[0] || car.shift();
-    const mids = lac.slice(1, 5);
+    // médios: 4 viram 2x2, 2 ou 3 viram uma linha de 2, 1 fica sozinho, nenhum = o principal ocupa a largura
+    const resto = lac.slice(1); const mids = resto.length >= 4 ? resto.slice(0, 4) : resto.length >= 2 ? resto.slice(0, 2) : resto.slice(0, 1);
     const url = 'produto.html?id=' + encodeURIComponent(top.id);
     const meta = top.tipo === 'carta' ? [top.colecao, (top.condicao || '').split(' ·')[0]].filter(Boolean).join(' · ') : [top.categoria, top.colecao].filter(Boolean).join(' · ');
-    return `<div class="pj-game">
-      <div class="pj-head"><h2 class="pj-title">${esc(j.nome)}</h2><a href="loja.html?jogo=${esc(j.id)}">Ver tudo de ${esc(j.nome)} (${ps.length})</a></div>
-      <div class="pj-top${mids.length ? '' : ' solo'}">
-        <article class="pj-hero">
-          <a class="stage" href="${url}" tabindex="-1" aria-hidden="true">${media(top, { alt: false })}<span class="qty-badge">${top.estoque} unid.</span></a>
-          <div class="pj-hero-info">
-            <p class="tag">${esc((top.tipo === 'carta' ? 'CARTA AVULSA' : top.categoria || '').toUpperCase())}</p>
+    const hid = 'pj-' + j.id;
+    return `<section class="pjx" aria-labelledby="${hid}">
+      <div class="pjx-head"><div class="wrap"><div><h2 class="pjx-title" id="${hid}">${esc(j.nome)}</h2>${linhaJogo(j)}</div>
+        <a class="pjx-all" href="loja.html?jogo=${esc(j.id)}">Ver tudo de ${esc(j.nome)} (${ps.length}) <span aria-hidden="true">→</span></a></div></div>
+      <div class="pjx-main"><div class="wrap pjx-grid n${mids.length}">
+        <article class="pjx-hero">
+          <a class="stage" href="${url}" tabindex="-1" aria-hidden="true">${media(top, { alt: false })}</a>
+          <div class="pjx-hero-info">
             <h3><a href="${url}">${esc(top.nome)}</a></h3>
-            <p class="feat-meta">${esc(meta)}</p>
-            <p class="big-price${top.preco == null ? ' consulta' : ''}">${top.preco == null ? 'Preço sob consulta' : money(top.preco)}</p>
-            <button type="button" class="btn btn-accent" data-add="${esc(top.id)}">Colocar no pedido</button>
+            ${meta ? `<p class="pjx-meta">${esc(meta)}</p>` : ''}
+            <div class="pjx-buy"><p class="pjx-big${top.preco == null ? ' consulta' : ''}">${top.preco == null ? 'Preço sob consulta' : money(top.preco)}</p>
+            <button type="button" class="btn btn-accent" data-add="${esc(top.id)}">Colocar no pedido</button></div>
           </div>
         </article>
-        ${mids.length ? `<div class="pj-mid" role="list" aria-label="Mais lacrados de ${esc(j.nome)}">${mids.map(midHTML).join('')}</div>` : ''}
-      </div>
-      ${car.length ? `<div class="pj-singles"><div class="pj-singles-head"><h3>Cartas avulsas de ${esc(j.nome)}</h3><a href="loja.html?jogo=${esc(j.id)}&tipo=carta">Ver todas</a></div>
-        <div class="pj-mini-row" role="list" aria-label="Cartas avulsas de ${esc(j.nome)}">${car.slice(0, 12).map(miniHTML).join('')}</div></div>` : ''}
-    </div>`;
+        ${mids.length ? `<div class="pjx-mids" role="list" aria-label="Mais lacrados de ${esc(j.nome)}">${mids.map(midHTML).join('')}</div>` : ''}
+      </div></div>
+      ${car.length ? `<div class="pjx-cards"><div class="wrap">
+        <div class="pjx-cards-head"><h3>Cartas avulsas de ${esc(j.nome)}</h3><a href="loja.html?jogo=${esc(j.id)}&amp;tipo=carta">Ver todas</a></div>
+        <div class="pjx-card-row" role="list" aria-label="Cartas avulsas de ${esc(j.nome)}">${car.slice(0, 10).map(cardHTML).join('')}</div></div></div>` : ''}
+    </section>`;
   }).join('');
   if (pj) { $('#pj-panel').innerHTML = pj; $('#por-jogo').hidden = false; }
   $$('[data-shelf]').forEach((sh) => {

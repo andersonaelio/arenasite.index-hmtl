@@ -12,7 +12,7 @@ const LOJA = { nome: 'Arena Prime', endereco: 'R. Ver. Osvaldo Bittencourt, 637 
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-const money = (v) => (v == null || v === '' || isNaN(v)) ? 'Preço a consultar' : Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+const money = (v) => (v == null || v === '' || isNaN(v)) ? 'Sob consulta' : Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
 const waLink = (msg) => 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(msg);
 const DIAS = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
 const DIAS_LONGO = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
@@ -366,10 +366,10 @@ function drawBody() {
   body.innerHTML = av + c.map((x) => `<div class="line"><div class="thumb">${media(x, { alt: false })}</div>
     <div class="nm"><p><b>${esc(x.nome)}</b></p><p class="s">${esc(x.info)} · ${money(x.preco)}</p></div>
     <div class="mini-qty"><button type="button" data-q="-1" data-id="${esc(x.id)}" aria-label="Tirar um ${esc(x.nome)}">−</button><span aria-label="Quantidade">${x.qtd}</span><button type="button" data-q="1" data-id="${esc(x.id)}" aria-label="Mais um ${esc(x.nome)}" ${x.qtd >= x.max ? 'disabled' : ''}>+</button></div></div>`).join('');
-  const semPreco = c.some((x) => x.preco == null);
+  const semPreco = c.some((x) => x.preco == null), algumPreco = c.some((x) => x.preco != null);
   const total = c.reduce((s, x) => s + (x.preco || 0) * x.qtd, 0);
-  foot.innerHTML = `<div class="total"><span>Total${semPreco ? ' parcial' : ''}</span><span>${money(total)}</span></div>
-    ${semPreco ? '<p class="note">Alguns itens estão com preço a consultar. A loja confirma o valor no WhatsApp.</p>' : ''}
+  foot.innerHTML = `${algumPreco ? `<div class="total"><span>${semPreco ? 'Total dos itens com preço' : 'Total'}</span><span>${money(total)}</span></div>` : ''}
+    ${semPreco ? `<p class="note">${algumPreco ? 'Alguns itens' : 'Os itens'} estão com preço sob consulta. A loja confirma o valor no WhatsApp.</p>` : ''}
     <a class="btn btn-accent" id="send-order" href="${waLink(pedidoMsg(c))}" target="_blank" rel="noopener">Fechar pedido no WhatsApp</a>
     <p class="note">O pagamento e a retirada são combinados direto com a loja.</p>`;
   $('#send-order').addEventListener('click', async (e) => {
@@ -385,8 +385,13 @@ function drawBody() {
 }
 function pedidoMsg(c) {
   const linhas = c.map((x) => `• ${x.qtd}x ${x.nome} (${x.info}) · ${money(x.preco)}`);
-  const total = c.reduce((s, x) => s + (x.preco || 0) * x.qtd, 0);
-  return `Oi, Arena Prime! Quero fazer esse pedido pelo site:\n\n${linhas.join('\n')}\n\nTotal: ${money(total)}`;
+  const comPreco = c.filter((x) => x.preco != null), semPreco = c.length - comPreco.length;
+  const total = comPreco.reduce((s, x) => s + x.preco * x.qtd, 0);
+  let fim = '';
+  if (!semPreco) fim = `Total: ${money(total)}`;
+  else if (comPreco.length) fim = `Total dos itens com preço: ${money(total)}\nOs outros itens estão com preço sob consulta.`;
+  else fim = 'Pode me passar o valor?';
+  return `Oi, Arena Prime! Quero fazer esse pedido pelo site:\n\n${linhas.join('\n')}\n\n${fim}`;
 }
 
 /* ---------- cabeçalho e rodapé ---------- */
@@ -394,7 +399,7 @@ function header(atual) {
   const ic = (d) => `<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">${d}</svg>`;
   return `<a class="skip" href="#conteudo">Pular para o conteúdo</a>
   <header class="top"><div class="wrap">
-    <a class="logo" href="index.html" aria-label="Arena Prime, página inicial">ARENA<span>PRIME</span><small>FLORIPA</small></a>
+    <a class="logo" href="index.html"><img src="assets/logo-wordmark.svg" alt="Arena Prime, página inicial" width="160" height="40"></a>
     <nav class="nav" aria-label="Principal">
       <span class="nav-links">
         <a href="loja.html" ${atual === 'loja' ? 'aria-current="page"' : ''}>Loja</a>
@@ -409,7 +414,7 @@ function header(atual) {
 }
 function footer() {
   return `<footer class="foot"><div class="wrap">
-    <span class="logo">ARENA<span>PRIME</span></span>
+    <img class="foot-logo" src="assets/logo-slogan.svg" alt="Arena Prime. Seu jogo em outro nível." width="200" height="187" loading="lazy">
     <span>${esc(LOJA.endereco)}</span><span>${esc(LOJA.horario)}</span>
     <a href="https://instagram.com/${LOJA.instagram}" target="_blank" rel="noopener">@${LOJA.instagram}</a>
   </div></footer>
