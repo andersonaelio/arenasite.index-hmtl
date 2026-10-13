@@ -89,7 +89,8 @@
             <div style="display:flex;flex-direction:column;gap:10px">
               <label class="btn btn-ghost" style="cursor:pointer">Escolher foto<input type="file" accept="image/*" id="pf-file" class="sr"></label>
               <button type="button" class="btn btn-ghost" id="pf-nofoto">Remover foto</button>
-              <small style="color:var(--light-muted);max-width:300px">Box e booster: imagem oficial, salva do site da marca. Carta avulsa: foto do celular ou imagem oficial da carta. Se a imagem vier sem fundo, o painel marca "recortada" sozinho.</small>
+              <p id="pf-fundo" role="status" aria-live="polite" style="margin:0;max-width:300px;font-size:15px" hidden><span id="pf-fundo-txt"></span> <button type="button" class="btn btn-ghost" id="pf-fundo-btn" style="margin-top:8px"></button></p>
+              <small style="color:var(--light-muted);max-width:300px">Box e booster: imagem oficial. Se ela vier com fundo branco, o painel tira o fundo sozinho e marca "recortada". Carta avulsa: imagem oficial da carta ou foto do celular.</small>
             </div>
           </div>
           <label class="check full"><input type="checkbox" name="recorte"> Foto recortada, sem fundo (o produto aparece solto na vitrine, só com a sombra)</label>
@@ -284,19 +285,33 @@
     ['nome', 'colecao', 'numero', 'raridade', 'idioma'].forEach((k) => { f[k].value = d[k] || ''; });
     f.condicao.value = d.condicao || CONDICOES[0]; f.estoque.value = d.estoque ?? 1;
     f.preco.value = d.preco != null ? String(d.preco).replace('.', ',') : ''; f.destaque.checked = !!d.destaque; f.recorte.checked = !!d.recorte;
-    foto = d.imagem || ''; setPrev(); showTipo();
+    foto = d.imagem || ''; ultimaFoto = null; $('#pf-fundo').hidden = true; setPrev(); showTipo();
     $('#prod-list-view').hidden = true; f.hidden = false; f.nome.focus();
   }
   function closeForm() { $('#prod-form').hidden = true; $('#prod-list-view').hidden = false; renderProdutos(); }
   $('#novo-prod').onclick = () => openForm(null);
   $('#pf-cancel').onclick = closeForm;
-  $('#pf-nofoto').onclick = () => { foto = ''; setPrev(); };
+  $('#pf-nofoto').onclick = () => { foto = ''; ultimaFoto = null; $('#pf-fundo').hidden = true; setPrev(); };
+  let ultimaFoto = null;
+  function avisoFundo(r) {
+    const box = $('#pf-fundo'), txt = $('#pf-fundo-txt'), b = $('#pf-fundo-btn');
+    if (r.fundoTirado) { txt.textContent = 'Tirei o fundo branco da imagem.'; b.textContent = 'Manter o fundo'; b.dataset.modo = 'manter'; box.hidden = false; }
+    else if (r.fundoBranco) { txt.textContent = 'Essa imagem tem fundo branco.'; b.textContent = 'Tirar o fundo branco'; b.dataset.modo = 'tirar'; box.hidden = false; }
+    else box.hidden = true;
+  }
+  async function enviarFotoForm(file, tirarFundo) {
+    $('#pf-prev').innerHTML = '<span style="font-size:14px">Carregando…</span>'; $('#pf-err').hidden = true;
+    try { const r = await DB.enviarFoto(file, { tirarFundo }); foto = r.url; if (r.recorte !== null) $('#prod-form').recorte.checked = r.recorte; setPrev(); avisoFundo(r); }
+    catch (err) { $('#pf-err').textContent = err.message || 'Não deu pra enviar a foto. Tenta outra.'; $('#pf-err').hidden = false; setPrev(); }
+  }
   $('#pf-file').addEventListener('change', async (e) => {
     const file = e.target.files[0]; if (!file) return;
-    $('#pf-prev').innerHTML = '<span style="font-size:14px">Carregando…</span>';
-    try { const r = await DB.enviarFoto(file); foto = r.url; if (r.recorte !== null) $('#prod-form').recorte.checked = r.recorte; setPrev(); } catch (err) { $('#pf-err').textContent = err.message || 'Não deu pra enviar a foto. Tenta outra.'; $('#pf-err').hidden = false; setPrev(); }
+    ultimaFoto = file;
+    // lacrado: tira o fundo branco sozinho; carta avulsa: só avisa (borda branca de carta não pode sumir)
+    await enviarFotoForm(file, $('#prod-form').tipo.value === 'lacrado' ? 'auto' : false);
     e.target.value = '';
   });
+  $('#pf-fundo-btn').addEventListener('click', () => { if (ultimaFoto) enviarFotoForm(ultimaFoto, $('#pf-fundo-btn').dataset.modo === 'tirar'); });
   $('#prod-form').addEventListener('submit', async (e) => {
     e.preventDefault(); const f = e.target;
     const nome = f.nome.value.trim(); $('#pf-e-nome').hidden = !!nome; f.nome.setAttribute('aria-invalid', !nome);

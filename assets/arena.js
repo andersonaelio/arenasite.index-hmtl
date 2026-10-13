@@ -207,12 +207,13 @@ const DB = {
     if (!h.antes) throw new Error('Esse registro não guardou cópia pra restaurar');
     return DB.salvar(h.tabela, { ...h.antes });
   },
-  async enviarFoto(file) {
-    const img = await shrinkImage(file, DEMO ? 700 : 1400);
-    if (DEMO) return { url: img.dataUrl, recorte: img.transparente };
+  async enviarFoto(file, opcoes = {}) {
+    const img = await shrinkImage(file, DEMO ? 700 : 1400, opcoes);
+    const info = { recorte: img.transparente, fundoBranco: img.fundoBranco, fundoTirado: img.fundoTirado };
+    if (DEMO) return { url: img.dataUrl, ...info };
     const c = await sb(), path = 'produtos/' + uid() + '.webp';
     must(await c.storage.from('fotos').upload(path, img.blob, { contentType: 'image/webp', upsert: false }));
-    return { url: c.storage.from('fotos').getPublicUrl(path).data.publicUrl, recorte: img.transparente };
+    return { url: c.storage.from('fotos').getPublicUrl(path).data.publicUrl, ...info };
   }
 };
 
@@ -224,7 +225,44 @@ function cantosTransparentes(ctx, w, h) {
   } catch (e) { return null; }
 }
 
-function shrinkImage(file, max) {
+// Fundo branco liso (foto de distribuidora): se a borda inteira é quase branca, apaga o branco que
+// encosta na borda (sem furar o branco de dentro do produto) e suaviza o contorno.
+function bordaBranca(d, w, h) {
+  let tot = 0, br = 0; const passo = Math.max(1, Math.floor((w + h) / 400));
+  const ok = (i) => { const r = d[i], g = d[i + 1], b = d[i + 2]; return d[i + 3] > 200 && r > 232 && g > 232 && b > 232 && Math.max(r, g, b) - Math.min(r, g, b) < 18; };
+  for (let x = 0; x < w; x += passo) { tot += 2; if (ok(x * 4)) br++; if (ok(((h - 1) * w + x) * 4)) br++; }
+  for (let y = 0; y < h; y += passo) { tot += 2; if (ok(y * w * 4)) br++; if (ok((y * w + w - 1) * 4)) br++; }
+  return br / tot >= 0.9;
+}
+function tirarFundoBranco(ctx, w, h) {
+  const img = ctx.getImageData(0, 0, w, h), d = img.data, n = w * h;
+  const claro = (p) => { const i = p * 4, r = d[i], g = d[i + 1], b = d[i + 2]; return r > 226 && g > 226 && b > 226 && Math.max(r, g, b) - Math.min(r, g, b) < 24; };
+  const fora = new Uint8Array(n), pilha = new Int32Array(n); let top = 0;
+  const pusha = (p) => { if (!fora[p] && claro(p)) { fora[p] = 1; pilha[top++] = p; } };
+  for (let x = 0; x < w; x++) { pusha(x); pusha((h - 1) * w + x); }
+  for (let y = 0; y < h; y++) { pusha(y * w); pusha(y * w + w - 1); }
+  while (top) { const p = pilha[--top], x = p % w; if (x > 0) pusha(p - 1); if (x < w - 1) pusha(p + 1); if (p >= w) pusha(p - w); if (p < n - w) pusha(p + w); }
+  for (let p = 0; p < n; p++) {
+    if (fora[p]) { d[p * 4 + 3] = 0; continue; }
+    const x = p % w; const viz = (x > 0 && fora[p - 1]) || (x < w - 1 && fora[p + 1]) || (p >= w && fora[p - w]) || (p < n - w && fora[p + w]);
+    if (viz) { const i = p * 4, m = Math.min(d[i], d[i + 1], d[i + 2]); if (m > 190) d[i + 3] = Math.round(Math.min(1, (255 - m) / 65) * 255); }
+  }
+  // pedaços soltos e pequenos (selo, bandeirinha, marca d'água no canto) somem; o produto fica
+  const grupo = new Int32Array(n).fill(-1), tam = []; let g = 0;
+  for (let p0 = 0; p0 < n; p0++) {
+    if (grupo[p0] !== -1 || d[p0 * 4 + 3] <= 12) continue;
+    let t = 0; top = 0; pilha[top++] = p0; grupo[p0] = g;
+    while (top) { const p = pilha[--top], x = p % w; t++;
+      const viz4 = [x > 0 ? p - 1 : -1, x < w - 1 ? p + 1 : -1, p >= w ? p - w : -1, p < n - w ? p + w : -1];
+      for (const q of viz4) if (q >= 0 && grupo[q] === -1 && d[q * 4 + 3] > 12) { grupo[q] = g; pilha[top++] = q; } }
+    tam.push(t); g++;
+  }
+  if (tam.length > 1) { const maior = Math.max(...tam); for (let p = 0; p < n; p++) { const k = grupo[p]; if (k >= 0 && tam[k] < maior * 0.15) d[p * 4 + 3] = 0; } }
+  ctx.putImageData(img, 0, 0);
+}
+
+// tirarFundo: 'auto' (só tira se a borda toda for branca), true (força) ou false (não mexe)
+function shrinkImage(file, max, { tirarFundo = 'auto' } = {}) {
   return new Promise((ok, fail) => {
     const r = new FileReader();
     r.onerror = () => fail(new Error('Não consegui ler a foto'));
@@ -232,26 +270,35 @@ function shrinkImage(file, max) {
       const im = new Image();
       im.onerror = () => fail(new Error('Esse arquivo não parece ser uma foto'));
       im.onload = () => {
-        // 1) lê a imagem inteira (até 2400px) pra achar sobra transparente em volta
+        // 1) lê a imagem inteira (até 2400px)
         const s0 = Math.min(1, 2400 / Math.max(im.width, im.height));
         const c0 = document.createElement('canvas'); c0.width = Math.round(im.width * s0); c0.height = Math.round(im.height * s0);
-        const x0 = c0.getContext('2d'); x0.drawImage(im, 0, 0, c0.width, c0.height);
-        const transparente = cantosTransparentes(x0, c0.width, c0.height);
+        const x0 = c0.getContext('2d', { willReadFrequently: true }); x0.drawImage(im, 0, 0, c0.width, c0.height);
+        let transparente = cantosTransparentes(x0, c0.width, c0.height), fundoBranco = false, fundoTirado = false;
+        // 2) fundo branco liso vira recorte
+        if (!transparente && tirarFundo !== false) {
+          try {
+            fundoBranco = bordaBranca(x0.getImageData(0, 0, c0.width, c0.height).data, c0.width, c0.height);
+            if (fundoBranco || tirarFundo === true) { tirarFundoBranco(x0, c0.width, c0.height); transparente = true; fundoTirado = true; }
+          } catch (e) { /* sem permissão de ler os pixels: segue sem mexer */ }
+        } else if (!transparente) {
+          try { fundoBranco = bordaBranca(x0.getImageData(0, 0, c0.width, c0.height).data, c0.width, c0.height); } catch (e) {}
+        }
         let sx = 0, sy = 0, sw = c0.width, sh = c0.height;
         if (transparente) {
-          // 2) recorte sem fundo: corta a margem vazia pra o produto ocupar a placa inteira
+          // 3) corta a margem vazia pra o produto ocupar a placa inteira
           try {
             const d = x0.getImageData(0, 0, c0.width, c0.height).data; let x1 = c0.width, y1 = c0.height, x2 = -1, y2 = -1;
             for (let y = 0; y < c0.height; y++) for (let x = 0; x < c0.width; x++) if (d[(y * c0.width + x) * 4 + 3] > 12) { if (x < x1) x1 = x; if (x > x2) x2 = x; if (y < y1) y1 = y; if (y > y2) y2 = y; }
             if (x2 > x1 && y2 > y1) { const pad = Math.round(Math.max(x2 - x1, y2 - y1) * 0.03); sx = Math.max(0, x1 - pad); sy = Math.max(0, y1 - pad); sw = Math.min(c0.width, x2 + pad + 1) - sx; sh = Math.min(c0.height, y2 + pad + 1) - sy; }
-          } catch (e) { /* imagem de outro site sem permissão: segue sem cortar */ }
+          } catch (e) { /* segue sem cortar */ }
         }
-        // 3) reduz pro tamanho final
+        // 4) reduz pro tamanho final
         const s = Math.min(1, max / Math.max(sw, sh));
         const cv = document.createElement('canvas'); cv.width = Math.round(sw * s); cv.height = Math.round(sh * s);
         const ctx = cv.getContext('2d'); ctx.drawImage(c0, sx, sy, sw, sh, 0, 0, cv.width, cv.height);
         const dataUrl = cv.toDataURL('image/webp', 0.85);
-        cv.toBlob((blob) => ok({ dataUrl, blob, transparente }), 'image/webp', 0.85);
+        cv.toBlob((blob) => ok({ dataUrl, blob, transparente, fundoBranco, fundoTirado }), 'image/webp', 0.85);
       };
       im.src = r.result;
     };
