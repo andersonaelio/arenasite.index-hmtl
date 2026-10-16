@@ -517,3 +517,4 @@ a.btn.btn-accent,a.btn.btn-accent:hover,a.btn.btn-accent:visited{color:#fff}
 @media (max-width:720px){.logo img{height:34px}}
 /* menu do celular: os 4 itens cabem inteiros */
 @media (max-width:440px){.nav-links{justify-content:space-between;gap:0 12px}.nav-links a{font-size:16px}}
+.foot-cnpj{flex-basis:100%;font-size:13px;opacity:.85}
