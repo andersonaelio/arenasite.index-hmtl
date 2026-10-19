@@ -16,7 +16,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="assets/icon-180.png">
-<link rel="stylesheet" href="assets/arena.css?v=20261019b">
+<link rel="stylesheet" href="assets/arena.css?v=20261019c">
 </head>
 <body>
 <div id="hdr"></div>
@@ -34,7 +34,7 @@
 </main>
 <div id="ftr"></div>
 
-<script src="assets/arena.js?v=20261019b"></script>
+<script src="assets/arena.js?v=20261019c"></script>
 <script>
 (async function () {
   mountChrome('loja');
@@ -50,15 +50,11 @@
   $('#crumbs').innerHTML = `<li><a href="index.html">Início</a></li><li><a href="loja.html">Loja</a></li><li><a href="loja.html?jogo=${esc(p.jogo)}">${esc(jn)}</a></li><li><a href="loja.html?jogo=${esc(p.jogo)}&tipo=${p.tipo}">${p.tipo === 'carta' ? 'Cartas avulsas' : 'Lacrados'}</a></li><li><span aria-current="page">${esc(p.nome)}</span></li>`;
   const specs = p.tipo === 'carta'
     ? [p.colecao, p.numero ? '#' + p.numero : '', p.raridade, p.condicao, p.idioma ? 'Idioma ' + p.idioma : '']
-    : [p.categoria, p.colecao];
-  const sem = (p.estoque ?? 0) <= 0;
+    : [naMesa(p) ? '' : p.categoria, p.colecao];
+  const mesa = naMesa(p);
+  const sem = !mesa && (p.estoque ?? 0) <= 0;
   let qtd = 1;
-  $('#box').innerHTML = `<div class="prod">
-    <div class="stage">${media(p)}</div>
-    <div class="prod-info">
-      <p class="tag" style="margin-top:0">${esc(jn.toUpperCase())} · ${p.tipo === 'carta' ? 'CARTA AVULSA' : 'LACRADO'}</p>
-      <h1>${esc(p.nome)}</h1>
-      <ul class="specs">${specs.filter(Boolean).map((s) => `<li>${esc(s)}</li>`).join('')}</ul>
+  const compraHTML = `
       <p class="big-price">${money(p.preco)}</p>
       <p style="margin:0;color:var(--light-muted);font-weight:600">${sem ? 'Esgotado no momento' : p.estoque === 1 ? 'Última unidade' : p.estoque + ' em estoque'}</p>
       <div class="buy-row">
@@ -67,9 +63,24 @@
               : `<button type="button" class="btn btn-accent" id="buy">Colocar no pedido</button>`}
         <a class="btn btn-dark" href="${waLink('Oi, Arena Prime! Tenho uma dúvida sobre ' + p.nome + '.')}" target="_blank" rel="noopener">Tirar dúvida</a>
       </div>
-      <p class="note" style="margin-top:18px">O pedido é fechado no WhatsApp da loja. Pagamento e retirada combinados direto com a Arena.</p>
+      <p class="note" style="margin-top:18px">O pedido é fechado no WhatsApp da loja. Pagamento e retirada combinados direto com a Arena.</p>`;
+  const jogarHTML = `
+      <p class="big-price">Na mesa da Arena</p>
+      <p style="margin:0;color:var(--light-muted);font-weight:600">Esse jogo fica na loja. Vem jogar com a galera ou com quem tu trouxer.</p>
+      <div class="buy-row">
+        <a class="btn btn-accent" href="${waLink(msgMesa(p))}" target="_blank" rel="noopener">Quero jogar esse jogo</a>
+        <a class="btn btn-dark" href="${waLink(msgInfo(p))}" target="_blank" rel="noopener">Pedir informações</a>
+      </div>
+      <p class="note" style="margin-top:18px">Chama no WhatsApp pra combinar o dia e o horário. A loja abre de terça a domingo, das 14h às 22h.</p>`;
+  $('#box').innerHTML = `<div class="prod">
+    <div class="stage">${media(p)}</div>
+    <div class="prod-info">
+      <p class="tag" style="margin-top:0">${esc(jn.toUpperCase())} · ${mesa ? 'PRA JOGAR NA LOJA' : p.tipo === 'carta' ? 'CARTA AVULSA' : 'LACRADO'}</p>
+      <h1>${esc(p.nome)}</h1>
+      <ul class="specs">${specs.filter(Boolean).map((s) => `<li>${esc(s)}</li>`).join('')}</ul>
+${mesa ? jogarHTML : compraHTML}
     </div></div>`;
-  if (!sem) {
+  if (!sem && !mesa) {
     const set = () => { $('#q').textContent = qtd; };
     $("#qmenos").onclick = () => { qtd = Math.max(1, qtd - 1); set(); };
     $("#qmais").onclick = () => { qtd = Math.min(p.estoque, qtd + 1); set(); };

@@ -16,7 +16,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="assets/icon-180.png">
-<link rel="stylesheet" href="assets/arena.css?v=20261019b">
+<link rel="stylesheet" href="assets/arena.css?v=20261019c">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Store","name":"Arena Prime","address":{"@type":"PostalAddress","streetAddress":"R. Ver. Osvaldo Bittencourt, 637","addressLocality":"Florianópolis","addressRegion":"SC","postalCode":"88047-700","addressCountry":"BR"},"telephone":"+55 48 99963-0724","openingHours":["Mo-Su 10:00-12:00","Mo-Su 14:00-22:00"],"sameAs":["https://instagram.com/arenaprimefloripa"]}</script>
 </head>
 <body>
@@ -168,7 +168,7 @@
 </main>
 <div id="ftr"></div>
 
-<script src="assets/arena.js?v=20261019b"></script>
+<script src="assets/arena.js?v=20261019c"></script>
 <script>
 (async function () {
   mountChrome('home');
@@ -208,15 +208,17 @@
     if (!f) { box.innerHTML = `<p class="tag" style="margin-top:0">${esc(j.nome.toUpperCase())}</p><p class="feat-empty">Os produtos de ${esc(j.nome)} aparecem aqui assim que forem cadastrados.</p><a class="feat-all" href="index.html#lista">Procurando algo de ${esc(j.nome)}? Pede na lista de desejos</a>`; return; }
     const more = ps.filter((p) => p.id !== f.id).slice(0, 4);
     const url = 'produto.html?id=' + encodeURIComponent(f.id);
-    const meta = f.tipo === 'carta' ? [f.colecao, (f.condicao || '').split(' ·')[0], f.idioma].filter(Boolean).join(' · ') : [f.categoria, f.colecao].filter(Boolean).join(' · ');
+    const meta = f.tipo === 'carta' ? [f.colecao, (f.condicao || '').split(' ·')[0], f.idioma].filter(Boolean).join(' · ') : [naMesa(f) ? '' : f.categoria, f.colecao].filter(Boolean).join(' · ');
     box.innerHTML = `<p class="tag" style="margin-top:0">${f.destaque ? 'DESTAQUE' : 'CHEGOU AGORA'} · ${esc(j.nome.toUpperCase())}</p>
       <div class="feat-main">
         <a class="stage feat-stage" href="${url}" tabindex="-1" aria-hidden="true">${media(f, { alt: false })}</a>
         <div class="feat-info">
           <h2><a href="${url}">${esc(f.nome)}</a></h2>
-          <p class="feat-meta">${esc(meta)}${f.estoque > 0 && f.estoque <= 2 ? ' · só ' + f.estoque + ' em estoque' : ''}</p>
-          <p class="big-price${f.preco == null ? ' consulta' : ''}">${f.preco == null ? 'Preço sob consulta' : money(f.preco)}</p>
-          <button type="button" class="btn btn-accent" data-add="${esc(f.id)}">Colocar no pedido</button>
+          <p class="feat-meta">${esc(meta)}${!naMesa(f) && f.estoque > 0 && f.estoque <= 2 ? ' · só ' + f.estoque + ' em estoque' : ''}</p>
+          ${naMesa(f) ? `<p class="big-price consulta">Pra jogar na mesa da Arena</p>
+          <a class="btn btn-accent" href="${waLink(msgMesa(f))}" target="_blank" rel="noopener">Quero jogar esse jogo</a>`
+          : `<p class="big-price${f.preco == null ? ' consulta' : ''}">${f.preco == null ? 'Preço sob consulta' : money(f.preco)}</p>
+          <button type="button" class="btn btn-accent" data-add="${esc(f.id)}">Colocar no pedido</button>`}
         </div>
       </div>
       <div class="feat-more">
@@ -237,10 +239,15 @@
   fill($('#t-lac'), lac, 'Nenhum produto lacrado em estoque agora.');
   fill($('#t-car'), car, 'Nenhuma carta avulsa em estoque agora.');
   // por jogo, em três níveis: a cereja (maior valor), o bolo (outros lacrados), o glacê (cartas avulsas)
-  const RANK = { 'Booster box': 6, 'Box': 5, 'Jogo de tabuleiro': 4, 'Double Pack': 3, 'Deck pronto': 3, 'Booster': 2, 'Acessório': 1 };
+  const RANK = { 'Booster box': 6, 'Box': 5, 'Jogo de tabuleiro': 4, 'Pra jogar na loja': 4, 'Double Pack': 3, 'Deck pronto': 3, 'Booster': 2, 'Acessório': 1 };
   const peso = (p) => (p.preco || 0) * 1000 + (RANK[p.categoria] || 0) + (p.destaque ? 1e9 : 0);
-  const precoTxt = (p) => p.preco == null ? 'Sob consulta' : money(p.preco);
+  const precoTxt = (p) => naMesa(p) ? 'Na mesa da loja' : p.preco == null ? 'Sob consulta' : money(p.preco);
   const qtd = (p) => p.estoque === 1 ? 'Última unidade' : p.estoque + ' unid.';
+  const PLUS = '<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>';
+  const DADO = '<svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="4" y="4" width="16" height="16" rx="3"/><circle cx="9" cy="9" r="1.3" fill="currentColor"/><circle cx="15" cy="15" r="1.3" fill="currentColor"/><circle cx="15" cy="9" r="1.3" fill="currentColor"/><circle cx="9" cy="15" r="1.3" fill="currentColor"/></svg>';
+  const plusBtn = (p) => naMesa(p)
+    ? `<a class="pjx-plus" href="${waLink(msgMesa(p))}" target="_blank" rel="noopener" aria-label="Quero jogar ${esc(p.nome)} na loja">${DADO}</a>`
+    : `<button type="button" class="pjx-plus" data-add="${esc(p.id)}" aria-label="Colocar ${esc(p.nome)} no pedido">${PLUS}</button>`;
   const evsJogo = await DB.eventos().catch(() => []);
   const linhaJogo = (j) => {
     const nome = j.nome.toLowerCase();
@@ -253,12 +260,12 @@
       <a class="stage" href="${url}" tabindex="-1" aria-hidden="true">${media(p, { alt: false })}</a>
       <h4><a href="${url}">${esc(p.nome)}</a></h4>
       <div class="pjx-mid-foot"><span class="pjx-price">${precoTxt(p)}</span>
-      <button type="button" class="pjx-plus" data-add="${esc(p.id)}" aria-label="Colocar ${esc(p.nome)} no pedido"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div></article>`; };
+      ${plusBtn(p)}</div></article>`; };
   const cardHTML = (p) => { const url = 'produto.html?id=' + encodeURIComponent(p.id); return `<article class="pjx-card" role="listitem">
       <a class="pjx-card-img" href="${url}" tabindex="-1" aria-hidden="true">${media(p, { alt: false })}<span class="qty-badge">${qtd(p)}</span></a>
       <h4><a href="${url}">${esc(p.nome)}</a></h4>
       <div class="pjx-card-foot"><span class="pjx-price">${precoTxt(p)}</span>
-      <button type="button" class="pjx-plus" data-add="${esc(p.id)}" aria-label="Colocar ${esc(p.nome)} no pedido"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button></div></article>`; };
+      ${plusBtn(p)}</div></article>`; };
   const pj = comEstoque.map((j) => {
     const ps = todosProdutos.filter((p) => p.jogo === j.id);
     const lac = ps.filter((p) => p.tipo === 'lacrado').sort((a, b) => peso(b) - peso(a));
@@ -267,7 +274,7 @@
     // médios: 4 viram 2x2, 2 ou 3 viram uma linha de 2, 1 fica sozinho, nenhum = o principal ocupa a largura
     const resto = lac.slice(1); const mids = resto.length >= 4 ? resto.slice(0, 4) : resto.length >= 2 ? resto.slice(0, 2) : resto.slice(0, 1);
     const url = 'produto.html?id=' + encodeURIComponent(top.id);
-    const meta = top.tipo === 'carta' ? [top.colecao, (top.condicao || '').split(' ·')[0]].filter(Boolean).join(' · ') : [top.categoria, top.colecao].filter(Boolean).join(' · ');
+    const meta = top.tipo === 'carta' ? [top.colecao, (top.condicao || '').split(' ·')[0]].filter(Boolean).join(' · ') : [naMesa(top) ? '' : top.categoria, top.colecao].filter(Boolean).join(' · ');
     const hid = 'pj-' + j.id;
     return `<section class="pjx" aria-labelledby="${hid}">
       <div class="pjx-head"><div class="wrap"><div><h2 class="pjx-title" id="${hid}">${esc(j.nome)}</h2>${linhaJogo(j)}</div>
@@ -278,8 +285,10 @@
           <div class="pjx-hero-info">
             <h3><a href="${url}">${esc(top.nome)}</a></h3>
             ${meta ? `<p class="pjx-meta">${esc(meta)}</p>` : ''}
-            <div class="pjx-buy"><p class="pjx-big${top.preco == null ? ' consulta' : ''}">${top.preco == null ? 'Preço sob consulta' : money(top.preco)}</p>
-            <button type="button" class="btn btn-accent" data-add="${esc(top.id)}">Colocar no pedido</button></div>
+            <div class="pjx-buy">${naMesa(top) ? `<p class="pjx-big consulta">Pra jogar na mesa da Arena</p>
+            <a class="btn btn-accent" href="${waLink(msgMesa(top))}" target="_blank" rel="noopener">Quero jogar esse jogo</a>`
+            : `<p class="pjx-big${top.preco == null ? ' consulta' : ''}">${top.preco == null ? 'Preço sob consulta' : money(top.preco)}</p>
+            <button type="button" class="btn btn-accent" data-add="${esc(top.id)}">Colocar no pedido</button>`}</div>
           </div>
         </article>
         ${mids.length ? `<div class="pjx-mids" role="list" aria-label="Mais lacrados de ${esc(j.nome)}">${mids.map(midHTML).join('')}</div>` : ''}

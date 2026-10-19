@@ -16,7 +16,12 @@ const money = (v) => (v == null || v === '' || isNaN(v)) ? 'Sob consulta' : Numb
 const waLink = (msg) => 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(msg);
 const DIAS = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
 const DIAS_LONGO = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
-const CATEGORIAS_LACRADO = ['Booster box', 'Booster', 'Box', 'Double Pack', 'Deck pronto', 'Acessório', 'Jogo de tabuleiro', 'Colecionável'];
+const CATEGORIAS_LACRADO = ['Booster box', 'Booster', 'Box', 'Double Pack', 'Deck pronto', 'Acessório', 'Jogo de tabuleiro', 'Pra jogar na loja', 'Colecionável'];
+/* jogo que fica na loja pra jogar na mesa: não entra no pedido, vira conversa no WhatsApp */
+const MESA = 'Pra jogar na loja';
+const naMesa = (p) => p && p.categoria === MESA;
+const msgMesa = (p) => 'Oi, Arena Prime! Quero jogar o ' + p.nome + ' aí na loja. Quando tem mesa livre?';
+const msgInfo = (p) => 'Oi, Arena Prime! Queria saber mais sobre o ' + p.nome + ': como funciona pra jogar aí na loja?';
 const CONDICOES = ['NM · Near Mint', 'SP · Slightly Played', 'MP · Moderately Played', 'HP · Heavily Played', 'D · Danificada'];
 const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
@@ -307,7 +312,7 @@ function shrinkImage(file, max, { tirarFundo = 'auto' } = {}) {
 }
 
 /* ---------- mídia do produto ---------- */
-const SHAPE = { 'Booster box': 'box', 'Booster': 'pack', 'Box': 'etb', 'Double Pack': 'etb', 'Deck pronto': 'etb', 'Acessório': 'etb', 'Jogo de tabuleiro': 'etb', 'Colecionável': 'etb', 'Carta': 'card' };
+const SHAPE = { 'Booster box': 'box', 'Booster': 'pack', 'Box': 'etb', 'Double Pack': 'etb', 'Deck pronto': 'etb', 'Acessório': 'etb', 'Jogo de tabuleiro': 'etb', 'Pra jogar na loja': 'etb', 'Colecionável': 'etb', 'Carta': 'card' };
 function media(p, { alt = true } = {}) {
   if (p.imagem) return `<img class="${p.recorte ? 'cut' : 'photo'}" src="${esc(p.imagem)}" alt="${alt ? esc(p.nome + (p.colecao ? ', ' + p.colecao : '')) : ''}" loading="lazy" decoding="async">`;
   const s = SHAPE[p.categoria] || (p.tipo === 'carta' ? 'card' : 'etb');
@@ -322,14 +327,15 @@ function tagLine(p) {
 }
 function itemHTML(p, li) {
   const url = 'produto.html?id=' + encodeURIComponent(p.id);
-  const sem = (p.estoque ?? 0) <= 0;
+  const mesa = naMesa(p);
+  const sem = !mesa && (p.estoque ?? 0) <= 0;
   return `<article class="item${p.tipo === 'carta' ? ' is-card' : ''}"${li ? ' role="listitem"' : ''}>
-    <a class="stage" href="${url}" tabindex="-1" aria-hidden="true">${media(p, { alt: false })}${sem ? '' : `<span class="qty-badge">${p.estoque} unid.</span>`}</a>
+    <a class="stage" href="${url}" tabindex="-1" aria-hidden="true">${media(p, { alt: false })}${sem || mesa ? '' : `<span class="qty-badge">${p.estoque} unid.</span>`}</a>
     <p class="tag">${esc(tagLine(p))}</p>
     <h4><a href="${url}">${esc(p.nome)}</a></h4>
-    ${p.estoque === 1 ? '<p class="stock-low">Última unidade</p>' : ''}
-    <div class="item-foot"><span class="price">${p.preco == null ? 'Sob consulta' : money(p.preco)}</span>
-      <button type="button" class="add" data-add="${esc(p.id)}" ${sem ? 'disabled' : ''} aria-label="Colocar ${esc(p.nome)} no pedido">${sem ? 'Esgotado' : '+ Pedido'}</button></div>
+    ${p.estoque === 1 && !mesa ? '<p class="stock-low">Última unidade</p>' : ''}
+    <div class="item-foot"><span class="price">${mesa ? 'Na mesa da loja' : p.preco == null ? 'Sob consulta' : money(p.preco)}</span>
+      ${mesa ? `<a class="add" href="${waLink(msgMesa(p))}" target="_blank" rel="noopener" aria-label="Quero jogar ${esc(p.nome)} na loja">Quero jogar</a>` : `<button type="button" class="add" data-add="${esc(p.id)}" ${sem ? 'disabled' : ''} aria-label="Colocar ${esc(p.nome)} no pedido">${sem ? 'Esgotado' : '+ Pedido'}</button>`}</div>
   </article>`;
 }
 
