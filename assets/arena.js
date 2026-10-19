@@ -116,7 +116,7 @@ const DB = {
     if (comEstoque) list = list.filter((p) => (p.estoque ?? 0) > 0);
     if (busca) { const b = busca.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, ''); list = list.filter((p) => (p.nome + ' ' + (p.colecao || '') + ' ' + (p.categoria || '')).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').includes(b)); }
     const dt = (p) => new Date(p.criado_em).getTime();
-    if (ordem === 'novos') list.sort((a, b) => (b.destaque - a.destaque) || (dt(b) - dt(a)));
+    if (ordem === 'novos') list.sort((a, b) => (b.destaque - a.destaque) || ((b.imagem ? 1 : 0) - (a.imagem ? 1 : 0)) || (dt(b) - dt(a)));
     if (ordem === 'menor') list.sort((a, b) => (a.preco ?? 1e9) - (b.preco ?? 1e9));
     if (ordem === 'maior') list.sort((a, b) => (b.preco ?? -1) - (a.preco ?? -1));
     if (ordem === 'nome') list.sort((a, b) => a.nome.localeCompare(b.nome, 'pt'));
@@ -311,7 +311,7 @@ const SHAPE = { 'Booster box': 'box', 'Booster': 'pack', 'Box': 'etb', 'Double P
 function media(p, { alt = true } = {}) {
   if (p.imagem) return `<img class="${p.recorte ? 'cut' : 'photo'}" src="${esc(p.imagem)}" alt="${alt ? esc(p.nome + (p.colecao ? ', ' + p.colecao : '')) : ''}" loading="lazy" decoding="async">`;
   const s = SHAPE[p.categoria] || (p.tipo === 'carta' ? 'card' : 'etb');
-  return `<span class="ph ph-${s}" role="img" aria-label="Foto pendente: ${esc(p.nome)}"><b>${esc((p.categoria || '').toUpperCase())}</b><i>[foto]</i></span>`;
+  return `<span class="ph ph-${s}" role="img" aria-label="Foto pendente: ${esc(p.nome)}"><b>${esc((p.categoria || '').toUpperCase())}</b><i>Foto em breve</i></span>`;
 }
 let _jogosNome = {};
 async function nomesJogos() { if (!Object.keys(_jogosNome).length) (await DB.jogos({ todos: true })).forEach((j) => { _jogosNome[j.id] = j.nome; }); return _jogosNome; }
