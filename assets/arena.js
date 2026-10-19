@@ -16,7 +16,7 @@ const money = (v) => (v == null || v === '' || isNaN(v)) ? 'Sob consulta' : Numb
 const waLink = (msg) => 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(msg);
 const DIAS = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
 const DIAS_LONGO = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
-const CATEGORIAS_LACRADO = ['Booster box', 'Booster', 'Box', 'Double Pack', 'Deck pronto', 'Acessório', 'Jogo de tabuleiro'];
+const CATEGORIAS_LACRADO = ['Booster box', 'Booster', 'Box', 'Double Pack', 'Deck pronto', 'Acessório', 'Jogo de tabuleiro', 'Colecionável'];
 const CONDICOES = ['NM · Near Mint', 'SP · Slightly Played', 'MP · Moderately Played', 'HP · Heavily Played', 'D · Danificada'];
 const store = {
   get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } },
@@ -307,7 +307,7 @@ function shrinkImage(file, max, { tirarFundo = 'auto' } = {}) {
 }
 
 /* ---------- mídia do produto ---------- */
-const SHAPE = { 'Booster box': 'box', 'Booster': 'pack', 'Box': 'etb', 'Double Pack': 'etb', 'Deck pronto': 'etb', 'Acessório': 'etb', 'Jogo de tabuleiro': 'etb', 'Carta': 'card' };
+const SHAPE = { 'Booster box': 'box', 'Booster': 'pack', 'Box': 'etb', 'Double Pack': 'etb', 'Deck pronto': 'etb', 'Acessório': 'etb', 'Jogo de tabuleiro': 'etb', 'Colecionável': 'etb', 'Carta': 'card' };
 function media(p, { alt = true } = {}) {
   if (p.imagem) return `<img class="${p.recorte ? 'cut' : 'photo'}" src="${esc(p.imagem)}" alt="${alt ? esc(p.nome + (p.colecao ? ', ' + p.colecao : '')) : ''}" loading="lazy" decoding="async">`;
   const s = SHAPE[p.categoria] || (p.tipo === 'carta' ? 'card' : 'etb');
