@@ -525,3 +525,19 @@ a.btn.btn-accent,a.btn.btn-accent:hover,a.btn.btn-accent:visited{color:#fff}
 .ph{background:linear-gradient(160deg,#D8CEEA,#B9AAD6);color:#3E3356;box-shadow:0 14px 26px rgba(40,10,80,.14),inset 0 1px 0 rgba(255,255,255,.6)}
 .ph i{opacity:.75}
 .item .stage img{position:absolute;inset:0;margin:auto}
+/* "Quero jogar" é link com cara de botão: vence a cor e o sublinhado dos links do painel claro */
+a.add,.panel a.add,.light a.add{display:inline-flex;align-items:center;justify-content:center;color:#fff;text-decoration:none;font-weight:600}
+a.add:hover,.panel a.add:hover{color:#fff;background:#5B21B6}
+a.pjx-plus,.panel a.pjx-plus{color:#fff;text-decoration:none}
+/* seletor de jogo: seta roxa tipo "play" no lugar da bolinha. Tamanho em em, acompanha a fonte de cada tela */
+.game-btn{gap:0;align-items:flex-start}
+.game-btn .dot{display:none}
+.game-btn .name{display:block;position:relative;padding-left:.78em;transition:color .2s ease,transform .25s ease}
+.game-btn .name::before{content:"";position:absolute;left:0;top:.24em;width:.48em;height:.58em;background:var(--accent-text);
+  clip-path:polygon(0 0,100% 50%,0 100%);transform:scale(0) translateX(-.3em);opacity:0;transform-origin:left center;
+  transition:transform .28s cubic-bezier(.2,.9,.3,1.3),opacity .2s ease}
+.game-btn[aria-pressed="true"] .name{transform:translateX(.08em)}
+.game-btn[aria-pressed="true"] .name::before{transform:none;opacity:1;filter:drop-shadow(0 0 .18em rgba(183,148,255,.55))}
+.game-btn:not([aria-pressed="true"]):hover .name,.game-btn:not([aria-pressed="true"]):focus-visible .name{transform:translateX(.12em)}
+.game-btn:not([aria-pressed="true"]):hover .name::before,.game-btn:not([aria-pressed="true"]):focus-visible .name::before{transform:scale(.7);opacity:.35}
+@media (prefers-reduced-motion:reduce){.game-btn .name,.game-btn .name::before{transition:none}}
