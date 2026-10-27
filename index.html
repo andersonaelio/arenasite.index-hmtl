@@ -16,7 +16,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="assets/icon-180.png">
-<link rel="stylesheet" href="assets/arena.css?v=20261023b">
+<link rel="stylesheet" href="assets/arena.css?v=20261027a">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Store","name":"Arena Prime","address":{"@type":"PostalAddress","streetAddress":"R. Ver. Osvaldo Bittencourt, 637","addressLocality":"Florianópolis","addressRegion":"SC","postalCode":"88047-700","addressCountry":"BR"},"telephone":"+55 48 99963-0724","openingHours":["Mo-Su 10:00-12:00","Mo-Su 14:00-22:00"],"sameAs":["https://instagram.com/arenaprimefloripa"]}</script>
 </head>
 <body>
@@ -56,6 +56,7 @@
             <button type="button" class="arrow" data-dir="1" aria-label="Avançar nas cartas avulsas"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
           </div></div>
         <div class="track" id="t-car" role="list" aria-labelledby="sh-car" tabindex="0"></div>
+        <div id="myp-car"></div>
       </div>
     </div>
   </section>
@@ -168,7 +169,7 @@
 </main>
 <div id="ftr"></div>
 
-<script src="assets/arena.js?v=20261023b"></script>
+<script src="assets/arena.js?v=20261027a"></script>
 <script>
 (async function () {
   mountChrome('home');
@@ -238,6 +239,7 @@
   const fill = (el, list, vazio) => { el.innerHTML = list.length ? list.slice(0, 14).map((p) => itemHTML(p, true)).join('') : `<p class="empty">${vazio}</p>`; };
   fill($('#t-lac'), lac, 'Nenhum produto lacrado em estoque agora.');
   fill($('#t-car'), car, 'Nenhuma carta avulsa em estoque agora.');
+  $('#myp-car').outerHTML = mypFaixa('Aqui aparecem só algumas. Todas as cartas avulsas da Arena estão na nossa loja do MYP.');
   // por jogo, em três níveis: a cereja (maior valor), o bolo (outros lacrados), o glacê (cartas avulsas)
   const RANK = { 'Booster box': 6, 'Box': 5, 'Jogo de tabuleiro': 4, 'Pra jogar na loja': 4, 'Double Pack': 3, 'Deck pronto': 3, 'Booster': 2, 'Acessório': 1 };
   const peso = (p) => (p.preco || 0) * 1000 + (RANK[p.categoria] || 0) + (p.destaque ? 1e9 : 0);
@@ -294,7 +296,7 @@
         ${mids.length ? `<div class="pjx-mids" role="list" aria-label="Mais lacrados de ${esc(j.nome)}">${mids.map(midHTML).join('')}</div>` : ''}
       </div></div>
       ${car.length ? `<div class="pjx-cards"><div class="wrap">
-        <div class="pjx-cards-head"><h3>Cartas avulsas de ${esc(j.nome)}</h3><a href="loja.html?jogo=${esc(j.id)}&amp;tipo=carta">Ver todas</a></div>
+        <div class="pjx-cards-head"><h3>Cartas avulsas de ${esc(j.nome)}</h3><span class="pjx-cards-links"><a href="loja.html?jogo=${esc(j.id)}&amp;tipo=carta">Ver todas</a><a href="${LOJA.myp}" target="_blank" rel="noopener">No MYP ${SETA_FORA}</a></span></div>
         <div class="pjx-card-row" role="list" aria-label="Cartas avulsas de ${esc(j.nome)}">${car.slice(0, 10).map(cardHTML).join('')}</div></div></div>` : ''}
     </section>`;
   }).join('');

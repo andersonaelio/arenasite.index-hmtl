@@ -541,3 +541,10 @@ a.pjx-plus,.panel a.pjx-plus{color:#fff;text-decoration:none}
 .game-btn:not([aria-pressed="true"]):hover .name,.game-btn:not([aria-pressed="true"]):focus-visible .name{transform:translateX(.12em)}
 .game-btn:not([aria-pressed="true"]):hover .name::before,.game-btn:not([aria-pressed="true"]):focus-visible .name::before{transform:scale(.7);opacity:.35}
 @media (prefers-reduced-motion:reduce){.game-btn .name,.game-btn .name::before{transition:none}}
+/* atalho pra loja do MYP, onde estão todas as cartas avulsas */
+.myp-strip{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:14px 24px;margin:22px 0 0;padding:18px 22px;border-radius:18px;background:rgba(118,70,240,.12)}
+#myp-loja .myp-strip{margin:0 0 24px}
+.myp-strip p{margin:0;flex:1 1 320px;font-weight:600;color:var(--light-ink);line-height:1.4}
+.panel a.myp-btn,a.myp-btn{display:inline-flex;align-items:center;gap:8px;color:#fff;text-decoration:none;white-space:nowrap}
+.pjx-cards-links{display:inline-flex;gap:20px;align-items:baseline}
+.pjx-cards-links a{display:inline-flex;align-items:center;gap:4px}

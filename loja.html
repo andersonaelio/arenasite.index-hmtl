@@ -16,7 +16,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="assets/icon-180.png">
-<link rel="stylesheet" href="assets/arena.css?v=20261023b">
+<link rel="stylesheet" href="assets/arena.css?v=20261027a">
 </head>
 <body>
 <div id="hdr"></div>
@@ -46,6 +46,7 @@
         </label>
       </div>
       <p id="contagem" role="status" aria-live="polite" style="margin:0 0 24px;color:var(--light-muted);font-weight:600"></p>
+      <div id="myp-loja"></div>
       <div class="grid" id="grid"></div>
     </div>
   </section>
@@ -59,7 +60,7 @@
 </main>
 <div id="ftr"></div>
 
-<script src="assets/arena.js?v=20261023b"></script>
+<script src="assets/arena.js?v=20261027a"></script>
 <script>
 (async function () {
   mountChrome('loja');
@@ -85,6 +86,7 @@
   async function lista() {
     const ps = await DB.produtos({ jogo: st.jogo || undefined, tipo: st.tipo || undefined, busca: st.busca, ordem: st.ordem });
     $('#grid').innerHTML = ps.map(itemHTML).join('') || '<p class="empty" style="grid-column:1/-1">Nada encontrado com esses filtros. Tenta outro jogo ou outra busca, ou pede na lista de desejos.</p>';
+    $('#myp-loja').innerHTML = st.tipo === 'carta' ? mypFaixa('Aqui aparecem só algumas. Todas as cartas avulsas da Arena estão na nossa loja do MYP.') : '';
     $('#contagem').textContent = ps.length === 1 ? '1 produto' : ps.length + ' produtos';
     const p = new URLSearchParams(); if (st.jogo) p.set('jogo', st.jogo); if (st.tipo) p.set('tipo', st.tipo); if (st.busca) p.set('busca', st.busca);
     history.replaceState(null, '', 'loja.html' + (p.toString() ? '?' + p : ''));
