@@ -5,10 +5,12 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Arena Prime · Loja de card game em Florianópolis</title>
 <meta name="description" content="One Piece, Pokémon, Magic e board games em Carianos, Florianópolis. Veja o que chegou na loja, a agenda da semana e feche o pedido pelo WhatsApp.">
+<link rel="canonical" href="https://www.arenaprimefloripa.com.br/">
+<meta property="og:url" content="https://www.arenaprimefloripa.com.br/">
 <meta property="og:type" content="website">
 <meta property="og:title" content="Arena Prime · Loja de card game em Florianópolis">
 <meta property="og:description" content="One Piece, Pokémon, Magic e board games. Veja o que chegou e feche o pedido pelo WhatsApp.">
-<meta property="og:image" content="https://arenasiteindex-hmtl.vercel.app/assets/img/og.jpg">
+<meta property="og:image" content="https://www.arenaprimefloripa.com.br/assets/img/og.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
 <meta name="theme-color" content="#111111">
@@ -16,8 +18,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="assets/icon-180.png">
-<link rel="stylesheet" href="assets/arena.css?v=20261027a">
-<script type="application/ld+json">{"@context":"https://schema.org","@type":"Store","name":"Arena Prime","address":{"@type":"PostalAddress","streetAddress":"R. Ver. Osvaldo Bittencourt, 637","addressLocality":"Florianópolis","addressRegion":"SC","postalCode":"88047-700","addressCountry":"BR"},"telephone":"+55 48 99963-0724","openingHours":["Mo-Su 10:00-12:00","Mo-Su 14:00-22:00"],"sameAs":["https://instagram.com/arenaprimefloripa"]}</script>
+<link rel="stylesheet" href="assets/arena.css?v=20261028g">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"Store","name":"Arena Prime","description":"Loja de card game em Florianópolis: One Piece, Pokémon, Riftbound, board games e ligas semanais.","url":"https://www.arenaprimefloripa.com.br/","image":"https://www.arenaprimefloripa.com.br/assets/img/og.jpg","logo":"https://www.arenaprimefloripa.com.br/assets/icon-180.png","address":{"@type":"PostalAddress","streetAddress":"R. Ver. Osvaldo Bittencourt, 637","addressLocality":"Florianópolis","addressRegion":"SC","postalCode":"88047-700","addressCountry":"BR"},"geo":{"@type":"GeoCoordinates","latitude":-27.669467,"longitude":-48.5354068},"telephone":"+55 48 99963-0724","openingHours":["Mo 14:00-22:00","We-Su 14:00-22:00"],"hasMap":"https://www.google.com/maps/search/?api=1&query=Arena%20Prime&query_place_id=ChIJ2Sc515M7J5UR5rrpbv-hoo0","sameAs":["https://instagram.com/arenaprimefloripa","https://mypcards.com/ArenaPrimeFloripa"]}</script>
 </head>
 <body>
 <div id="hdr"></div>
@@ -34,6 +36,15 @@
       <div class="feat light" id="feat" aria-live="polite"></div>
     </div>
   </section>
+
+  <nav class="atalhos" aria-label="Atalhos">
+    <ul class="wrap">
+      <li><a href="#agenda"><span class="ic"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg></span><span><b>Agenda da semana</b><small id="at-ev">Ligas e mesas na loja</small></span></a></li>
+      <li><a id="at-com" target="_blank" rel="noopener"><span class="ic"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.2"/><path d="M3 19c.6-3.2 3-5 6-5s5.4 1.8 6 5"/><path d="M16 5.2a3 3 0 0 1 0 5.6M18 14.4c1.6.7 2.7 2.2 3 4.6"/></svg></span><span><b>Comunidade</b><small>Grupo da Arena no WhatsApp</small></span></a></li>
+      <li><a href="#visite"><span class="ic"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/></svg></span><span><b>Como chegar</b><small>Carianos, Florianópolis</small></span></a></li>
+      <li><a id="at-myp" target="_blank" rel="noopener"><span class="ic"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="11" height="15" rx="2"/><path d="M9 21h9a2 2 0 0 0 2-2V8"/></svg></span><span><b>Cartas avulsas</b><small>Todas no MYP</small></span></a></li>
+    </ul>
+  </nav>
 
   <section class="band" aria-labelledby="chegou-t">
     <div class="panel light">
@@ -61,84 +72,29 @@
     </div>
   </section>
 
-  <div class="por-jogo" id="por-jogo" hidden>
-    <div id="pj-panel"></div>
-  </div>
-
   <section class="agenda" id="agenda" aria-labelledby="agenda-t">
     <div class="wrap">
-      <div style="flex:1 1 300px">
+      <div class="ag-txt">
+        <p class="eyebrow">Jogar na Arena</p>
         <h2 id="agenda-t">Agenda da mesa</h2>
-        <p style="margin:16px 0 0;color:var(--muted);max-width:340px">Loja aberta de terça a domingo, das 14h às 22h. O que estiver "a confirmar", chama no WhatsApp antes de vir.</p>
+        <p class="ag-hora">Loja aberta de quarta a segunda, das 14h às 22h. O que estiver "a confirmar", chama no WhatsApp antes de vir.</p>
+        <div class="ag-com" id="comunidade" hidden>
+          <p><b>Comunidade no WhatsApp</b>Avisos das ligas, dos eventos e do que chega na loja.</p>
+          <a class="btn com-btn" id="com-btn" target="_blank" rel="noopener"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.1.7a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3Z"/></svg>Faça parte da comunidade</a>
+        </div>
       </div>
       <ul class="ev-list" id="eventos"></ul>
     </div>
   </section>
 
-  <section class="band esc-band" id="escolinha" aria-labelledby="esc-t">
-    <div class="panel light esc">
-      <div class="esc-top">
-        <div class="esc-intro">
-          <p class="tag" style="margin-top:0">ESCOLINHA · POKÉMON</p>
-          <h2 id="esc-t">Aprenda a jogar Pokémon na Arena</h2>
-          <p class="esc-sum">Aulas na mesa da loja, com outras crianças, pra aprender a jogar e jogar de verdade. A escolinha de One Piece abre em breve.</p>
-          <ul class="esc-facts">
-            <li><span>Valor</span><b>R$ 100 por mês</b></li>
-            <li><span>Dia e horário</span><b>[a confirmar]</b></li>
-            <li><span>Idade</span><b>[a confirmar]</b></li>
-          </ul>
-        </div>
-        <div class="esc-cta">
-          <button type="button" class="btn btn-accent esc-btn" id="esc-open" aria-expanded="false" aria-controls="matricula">Inscreva-se na escolinha</button>
-          <p class="note">Leva 1 minuto. Se for criança, chama alguém da família pra preencher junto.</p>
-        </div>
-      </div>
+  <div class="por-jogo" id="por-jogo" hidden>
+    <div id="pj-panel"></div>
+  </div>
 
-      <form class="mat" id="matricula" novalidate hidden aria-labelledby="mat-t">
-        <h3 id="mat-t">Inscrição na escolinha</h3>
-        <p class="note" style="margin:-6px 0 18px">A inscrição chega pra loja e fica pendente até ela confirmar com vocês pelo WhatsApp.</p>
-        <div class="mat-grid">
-          <label class="field">Nome de quem vai participar (obrigatório)
-            <input class="input" name="aluno" autocomplete="off" required aria-describedby="m-e-aluno"></label>
-          <label class="field">Idade (obrigatório)
-            <input class="input" name="idade" type="number" min="3" max="99" inputmode="numeric" required aria-describedby="m-e-idade"></label>
-          <p class="err" id="m-e-aluno" hidden>Escreve o nome de quem vai participar.</p>
-          <p class="err" id="m-e-idade" hidden>Escreve a idade em número, tipo 9.</p>
-          <label class="field">Nome do responsável (obrigatório)
-            <input class="input" name="responsavel" autocomplete="name" required aria-describedby="m-e-resp"></label>
-          <label class="field">WhatsApp do responsável (obrigatório)
-            <input class="input" name="whatsapp" type="tel" inputmode="tel" autocomplete="tel" placeholder="(48) 99999-9999" required aria-describedby="m-e-wa"></label>
-          <p class="err" id="m-e-resp" hidden>Escreve o nome de quem é responsável.</p>
-          <p class="err" id="m-e-wa" hidden>Escreve o WhatsApp com DDD, tipo 48 99999-9999.</p>
-          <fieldset class="full" style="border:0;padding:0;margin:0"><legend class="field" style="margin-bottom:8px">Qual escolinha</legend>
-            <div class="seg"><label><input type="radio" name="jogo" value="pokemon" checked> Pokémon</label><label aria-disabled="true" style="opacity:.6"><input type="radio" name="jogo" value="onepiece" disabled> One Piece (em breve)</label></div>
-          </fieldset>
-          <label class="field full">Quer contar alguma coisa? <small>Opcional</small>
-            <textarea class="input" name="obs" maxlength="500"></textarea></label>
-          <label class="hp" aria-hidden="true">Site<input name="site" tabindex="-1" autocomplete="off"></label>
-        </div>
-        <p class="note">Os dados ficam só com a Arena, pra combinar a escolinha.</p>
-        <button type="submit" class="btn btn-accent" style="margin-top:12px">Enviar inscrição</button>
-        <p id="mat-ok" class="ok-msg" role="status" aria-live="polite"></p>
-      </form>
-
-      <div class="esc-learn">
-        <h3>Você sabe o que um card game ensina?</h3>
-        <div class="esc-grid">
-          <figure class="esc-card" aria-label="Carta do Abra com três pontos marcados: o nome, o texto do ataque e os números de vida e dano">
-            <img src="assets/img/abra.webp" alt="">
-            <span class="pin" style="left:14%;top:5%">1</span>
-            <span class="pin" style="left:30%;top:63%">2</span>
-            <span class="pin" style="left:80%;top:5%">3</span>
-          </figure>
-          <ol class="esc-list">
-            <li><b>Inglês</b> Muitas cartas vêm em inglês. Nome, ataque e regra se repetem tanto que as palavras viram conhecidas.</li>
-            <li><b>Leitura</b> Toda carta tem um texto que precisa ser lido e entendido pra jogar a vez.</li>
-            <li><b>Matemática</b> Vida, dano e contadores. A partida inteira é conta de cabeça.</li>
-            <li class="no-pin"><b>Convivência</b> Esperar a vez, ganhar, perder e conversar com quem está do outro lado da mesa.</li>
-          </ol>
-        </div>
-      </div>
+  <section class="esc-teaser" aria-labelledby="esc-tz">
+    <div class="wrap">
+      <p><span class="tag">Escolinha · Pokémon</span><b id="esc-tz">Aulas pra crianças na mesa da Arena</b></p>
+      <a class="btn btn-line" href="escolinha.html">Conhecer a escolinha <span aria-hidden="true">→</span></a>
     </div>
   </section>
 
@@ -166,33 +122,45 @@
       </form>
     </div>
   </section>
+
+  <section class="visite" id="visite" aria-labelledby="visite-t">
+    <div class="wrap">
+      <div class="visite-txt">
+        <p class="eyebrow">Onde fica</p>
+        <h2 id="visite-t" class="sec-title">Vem jogar<br>na Arena</h2>
+        <address id="v-end"></address>
+        <p class="visite-hora" id="v-hora"></p>
+        <div class="visite-btns">
+          <a class="btn btn-accent" id="v-rota" target="_blank" rel="noopener"></a>
+          <a class="btn btn-line" id="v-aval" target="_blank" rel="noopener"></a>
+        </div>
+        <p class="visite-nota">Já jogou ou comprou aqui? Uma avaliação no Google ajuda a Arena a aparecer pra mais gente.</p>
+      </div>
+      <div class="visite-mapa">
+        <iframe id="v-mapa" title="Mapa da Arena Prime no Google Maps" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+    </div>
+  </section>
 </main>
 <div id="ftr"></div>
 
-<script src="assets/arena.js?v=20261027a"></script>
+<script src="assets/arena.js?v=20261028g"></script>
 <script>
 (async function () {
   mountChrome('home');
-  $('#esc-open').addEventListener('click', () => {
-    const f = $('#matricula'), abre = f.hidden; f.hidden = !abre; $('#esc-open').setAttribute('aria-expanded', abre);
-    if (abre) f.aluno.focus();
-  });
-  ['#matricula', '#lista-form'].forEach((sel) => $(sel).addEventListener('input', (e) => { const d = e.target.getAttribute('aria-describedby'); if (d && $('#' + d)) { $('#' + d).hidden = true; e.target.removeAttribute('aria-invalid'); } }));
-  $('#matricula').addEventListener('submit', async (e) => {
-    e.preventDefault(); const f = e.target;
-    if (f.site.value) return;
-    const v = { aluno: f.aluno.value.trim(), idade: parseInt(f.idade.value, 10), responsavel: f.responsavel.value.trim(), whatsapp: f.whatsapp.value.replace(/\D/g, ''), jogo: f.jogo.value, obs: f.obs.value.trim() };
-    const ok = { aluno: !!v.aluno, idade: v.idade >= 3 && v.idade <= 99, resp: !!v.responsavel, wa: v.whatsapp.length >= 10 && v.whatsapp.length <= 13 };
-    [['aluno', 'm-e-aluno', ok.aluno], ['idade', 'm-e-idade', ok.idade], ['responsavel', 'm-e-resp', ok.resp], ['whatsapp', 'm-e-wa', ok.wa]].forEach(([n, id, g]) => { $('#' + id).hidden = g; f[n].setAttribute('aria-invalid', !g); });
-    const first = ['aluno', 'idade', 'responsavel', 'whatsapp'].find((n, i) => !Object.values(ok)[i]);
-    if (first) { f[first].focus(); return; }
-    if (!podeEnviar('matricula', 60)) { $('#mat-ok').textContent = 'Inscrição já enviada. Se precisar mudar algo, chama a loja no WhatsApp.'; return; }
-    const msg = `Oi, Arena Prime! Fiz a inscrição na escolinha de Pokémon pelo site.\n\nQuem vai participar: ${v.aluno}, ${v.idade} anos\nResponsável: ${v.responsavel}\nWhatsApp: ${f.whatsapp.value.trim()}${v.obs ? '\nObservação: ' + v.obs : ''}`;
-    const win = window.open('', '_blank');
-    try { await DB.novaMatricula(v); } catch (err) { /* a mensagem do WhatsApp ainda leva a inscrição */ }
-    if (win) win.location = waLink(msg); else location.href = waLink(msg);
-    $('#mat-ok').textContent = 'Inscrição enviada! A loja confirma com vocês pelo WhatsApp.'; f.reset();
-  });
+  // onde fica
+  $('#v-end').textContent = LOJA.endereco;
+  $('#v-hora').textContent = LOJA.horario;
+  $('#v-rota').href = LOJA.rota; $('#v-rota').innerHTML = icone('rota') + 'Como chegar';
+  $('#v-aval').href = LOJA.avaliar; $('#v-aval').innerHTML = icone('estrela') + 'Avaliar no Google';
+  $('#v-mapa').src = LOJA.mapaEmbed;
+  // comunidade: um botão só, pro link principal
+  const com = LOJA.comunidades[0];
+  if (com) { $('#com-btn').href = com.link; $('#comunidade').hidden = false; $('#at-com').href = com.link; }
+  else $('#at-com').closest('li').remove();
+  $('#at-myp').href = LOJA.myp;
+
+  $('#lista-form').addEventListener('input', (e) => { const d = e.target.getAttribute('aria-describedby'); if (d && $('#' + d)) { $('#' + d).hidden = true; e.target.removeAttribute('aria-invalid'); } });
   await nomesJogos();
   const todosProdutos = await DB.produtos();
   const jogosTodos = await DB.jogos();
@@ -255,7 +223,7 @@
     const nome = j.nome.toLowerCase();
     const ev = evsJogo.find((e) => (e.titulo || '').toLowerCase().includes(nome) && e.confirmado) || evsJogo.find((e) => (e.titulo || '').toLowerCase().includes(nome));
     if (ev) return `<p class="pjx-ev">Pra jogar na Arena: <b>${esc(ev.titulo)}</b> <span>${esc(DIAS_LONGO[ev.dia].toLowerCase())}${ev.horario ? ', ' + esc(ev.horario) : ''} · ${ev.confirmado ? 'confirmado' : 'a confirmar, chama no WhatsApp antes'}</span></p>`;
-    if (j.id === 'pokemon') return `<p class="pjx-ev">Pra aprender: <a href="#escolinha"><b>Escolinha de Pokémon na Arena</b></a></p>`;
+    if (j.id === 'pokemon') return `<p class="pjx-ev">Pra aprender: <a href="escolinha.html"><b>Escolinha de Pokémon na Arena</b></a></p>`;
     return '';
   };
   const midHTML = (p) => { const url = 'produto.html?id=' + encodeURIComponent(p.id); return `<article class="pjx-mid" role="listitem">
@@ -311,7 +279,10 @@
   // agenda
   const quandoEv = (dia) => { const hoje = new Date(), d = (dia - hoje.getDay() + 7) % 7, dt = new Date(hoje.getTime() + d * 864e5); return (d === 0 ? 'Hoje' : d === 1 ? 'Amanhã' : DIAS_LONGO[dia]) + ', ' + dt.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }); };
   const evs = await DB.eventos();
-  const ok = evs.find((e) => e.confirmado);
+  // próximo evento confirmado a partir de hoje (não o primeiro da semana)
+  const hojeD = new Date().getDay();
+  const ok = evs.filter((e) => e.confirmado).sort((a, b) => ((a.dia - hojeD + 7) % 7) - ((b.dia - hojeD + 7) % 7))[0];
+  if (ok) $('#at-ev').textContent = (ok.dia === hojeD ? 'Hoje' : DIAS_LONGO[ok.dia]) + ' · ' + ok.titulo;
   if (ok) { const n = $('#next-ev'); n.innerHTML = `<span class="d">${DIAS[ok.dia]}</span><span><b>${esc(ok.titulo)}</b><span>${esc(ok.horario || '')} · confirmado</span></span>`; n.setAttribute('aria-label', DIAS_LONGO[ok.dia] + ': ' + ok.titulo + ', ' + (ok.horario || '') + ', confirmado. Ver agenda'); n.hidden = false; }
   $('#eventos').innerHTML = evs.map((e) => `<li class="ev${e.confirmado ? ' ok' : ''}"><span class="day" aria-hidden="true">${DIAS[e.dia]}</span>
     <div class="what"><p class="t"><span class="sr">${DIAS_LONGO[e.dia]}: </span>${esc(e.titulo)}</p><p class="w">${quandoEv(e.dia)}${e.horario ? ' · ' + esc(e.horario) : ''}</p></div>

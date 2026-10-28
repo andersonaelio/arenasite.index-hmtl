@@ -6,9 +6,27 @@
 const SUPABASE_URL = 'https://aqqmukbgnqxcfymaelus.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_PgQxIiD0ajBanMzgp7BL2g_x1L5P7H4';
 const WHATSAPP = '5548999630724';
-const LOJA = { nome: 'Arena Prime', endereco: 'R. Ver. Osvaldo Bittencourt, 637 · Carianos, Florianópolis/SC', horario: 'Terça a domingo · 14h às 22h', cnpj: '68.531.549/0001-46', instagram: 'arenaprimefloripa', myp: 'https://mypcards.com/ArenaPrimeFloripa' };
+const LOJA = { nome: 'Arena Prime', endereco: 'R. Ver. Osvaldo Bittencourt, 637 · Carianos, Florianópolis/SC', horario: 'Quarta a segunda · 14h às 22h', cnpj: '68.531.549/0001-46', instagram: 'arenaprimefloripa', myp: 'https://mypcards.com/ArenaPrimeFloripa',
+  // perfil da Arena no Google (place_id ChIJ2Sc515M7J5UR5rrpbv-hoo0)
+  mapa: 'https://www.google.com/maps/search/?api=1&query=Arena%20Prime&query_place_id=ChIJ2Sc515M7J5UR5rrpbv-hoo0',
+  rota: 'https://www.google.com/maps/dir/?api=1&destination=Arena%20Prime&destination_place_id=ChIJ2Sc515M7J5UR5rrpbv-hoo0',
+  avaliar: 'https://search.google.com/local/writereview?placeid=ChIJ2Sc515M7J5UR5rrpbv-hoo0',
+  mapaEmbed: 'https://maps.google.com/maps?q=-27.669467,-48.5354068&z=16&hl=pt-BR&output=embed',
+  // comunidades do WhatsApp: { nome: 'One Piece', link: 'https://chat.whatsapp.com/...' }. Vazio = o bloco não aparece
+  comunidades: [{ nome: 'Comunidade da Arena Prime', link: 'https://chat.whatsapp.com/Fbxp8KZeOTHLWtNPrc8DkY' }] };
 /* todas as cartas avulsas ficam na loja do MYP; o site mostra uma parte e manda pra lá */
 const SETA_FORA = '<svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M8 7h9v9"/></svg>';
+const ICONES = {
+  rota: '<path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21Z"/><circle cx="12" cy="9.5" r="2.5"/>',
+  estrela: '<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9Z"/>',
+  grupo: '<circle cx="9" cy="8" r="3.2"/><path d="M3 19c.6-3.2 3-5 6-5s5.4 1.8 6 5"/><path d="M16 5.2a3 3 0 0 1 0 5.6M18 14.4c1.6.7 2.7 2.2 3 4.6"/>'
+};
+const icone = (k, t = 20) => `<svg aria-hidden="true" width="${t}" height="${t}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONES[k]}</svg>`;
+function comunidadesHTML() {
+  if (!LOJA.comunidades.length) return '';
+  return `<div class="comunidades"><h3>${LOJA.comunidades.length > 1 ? 'Comunidades' : 'Comunidade'} no WhatsApp</h3><ul>${LOJA.comunidades.map((c) =>
+    `<li><a href="${esc(c.link)}" target="_blank" rel="noopener">${icone('grupo')}<span>${esc(c.nome)}</span><b>Entrar</b></a></li>`).join('')}</ul></div>`;
+}
 function mypFaixa(txt) { return `<div class="myp-strip"><p>${txt}</p><a class="btn btn-accent myp-btn" href="${LOJA.myp}" target="_blank" rel="noopener">Ver todas no MYP ${SETA_FORA}</a></div>`; }
 
 /* ---------- utilidades ---------- */
@@ -71,9 +89,10 @@ function seed() {
     ],
     eventos: [
       { id: 'e1', dia: 6, titulo: 'Liga de One Piece', horario: 'a partir das 14h30', confirmado: true, ativo: true },
-      { id: 'e2', dia: 0, titulo: 'Dia de troca', horario: 'horário a definir', confirmado: false, ativo: true },
+      { id: 'e2', dia: 0, titulo: 'Troca de Pokémon', horario: 'a partir das 12h', confirmado: true, ativo: true },
+      { id: 'e5', dia: 0, titulo: 'Liga de Pokémon', horario: 'a partir das 14h', confirmado: true, ativo: true },
       { id: 'e3', dia: 1, titulo: 'Game of Thrones ou RPG', horario: 'à noite', confirmado: false, ativo: true },
-      { id: 'e4', dia: 2, titulo: 'Mesão de Magic', horario: 'à noite', confirmado: false, ativo: true }
+      { id: 'e6', dia: 4, titulo: 'Liga de Riftbound', horario: 'às 19h30', confirmado: true, ativo: true }
     ],
     desejos: []
   };
@@ -460,8 +479,9 @@ function header(atual) {
       <span class="nav-links">
         <a href="loja.html" ${atual === 'loja' ? 'aria-current="page"' : ''}>Loja</a>
         <a href="index.html#agenda">Agenda</a>
-        <a href="index.html#escolinha">Escolinha</a>
+        <a href="escolinha.html" ${atual === 'escolinha' ? 'aria-current="page"' : ''}>Escolinha</a>
         <a href="index.html#lista">Lista de desejos</a>
+        <a href="index.html#visite">Onde fica</a>
       </span>
       <a class="icon-btn" href="loja.html#busca" aria-label="Buscar carta ou produto">${ic('<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>')}</a>
       <button type="button" class="btn btn-accent" id="open-cart">${ic('<path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6.2"/><circle cx="10" cy="20.5" r="1"/><circle cx="17" cy="20.5" r="1"/>')}Pedido <span class="cart-count" data-cart-count>0</span></button>
@@ -471,7 +491,7 @@ function header(atual) {
 function footer() {
   return `<footer class="foot"><div class="wrap">
     <img class="foot-logo" src="assets/logo-slogan.svg" alt="Arena Prime. Seu jogo em outro nível." width="200" height="187" loading="lazy">
-    <span>${esc(LOJA.endereco)}</span><span>${esc(LOJA.horario)}</span>
+    <a href="${LOJA.mapa}" target="_blank" rel="noopener">${esc(LOJA.endereco)}</a><span>${esc(LOJA.horario)}</span>
     <a href="https://instagram.com/${LOJA.instagram}" target="_blank" rel="noopener">@${LOJA.instagram}</a>
     <a href="${LOJA.myp}" target="_blank" rel="noopener">Cartas avulsas no MYP</a>
     <span class="foot-cnpj">CNPJ ${esc(LOJA.cnpj)}</span>
