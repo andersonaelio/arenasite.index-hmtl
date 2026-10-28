@@ -637,3 +637,26 @@ a.com-btn:hover{background:#F2ECFF;color:#2A1260}
 }
 /* celular: com 5 itens o menu quebra em duas linhas em vez de esconder o último */
 @media (max-width:440px){.nav-links{flex-wrap:wrap;overflow:visible;justify-content:flex-start;gap:4px 16px}}
+/* cartão do jogo no topo: liga daquele jogo + 3 destaques + atalhos */
+.gc-h{margin:22px 0 10px;font-size:13px;letter-spacing:.16em;font-weight:800;text-transform:uppercase;color:var(--light-muted)}
+.gc-evs{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px}
+.gc-evs li{display:flex;align-items:center;gap:16px;padding:12px 16px;border-radius:16px;background:rgba(109,40,217,.10)}
+.gc-day{font-family:var(--f-disp);font-weight:800;font-size:22px;color:var(--accent);min-width:56px}
+.gc-evs b{display:block;font-size:17px;line-height:1.25}
+.gc-evs small{display:block;font-size:14px;color:var(--light-muted);margin-top:2px}
+.gc-noev{margin:18px 0 0;padding:12px 16px;border-radius:16px;background:rgba(109,40,217,.10);font-weight:600;max-width:46ch}
+.gc-prods{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.feat a.gc-p{display:flex;flex-direction:column;gap:6px;color:var(--light-ink);text-decoration:none;min-width:0}
+.gc-img{height:160px;display:flex;align-items:flex-end;justify-content:flex-start;padding-bottom:6px}
+.gc-img img{max-width:92%;max-height:100%;object-fit:contain;filter:drop-shadow(0 14px 14px rgba(40,10,80,.28));transition:transform .2s ease}
+.gc-img .ph{height:82%!important;width:auto!important;max-width:82%;transform:none!important}
+.gc-img .ph b{display:none}.gc-img .ph i{font-size:13px}
+.gc-p b{font-size:14px;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.gc-price{font-family:var(--f-disp);font-weight:800;font-size:16px}
+.feat a.gc-p:hover b{text-decoration:underline}
+.feat a.gc-p:hover .gc-img img{transform:scale(1.04)}
+.gc-foot{display:flex;flex-wrap:wrap;align-items:center;gap:12px 20px;margin-top:22px}
+.feat .gc-foot .btn-accent{color:#fff;text-decoration:none}
+.feat .gc-link{font-weight:700}
+@media (max-width:600px){.gc-img{height:118px}.gc-prods{gap:10px}.gc-p b{font-size:13px}.gc-price{font-size:14px}.gc-day{font-size:18px;min-width:44px}.gc-evs li{gap:12px;padding:10px 12px}}
+@media (prefers-reduced-motion:reduce){.gc-img img{transition:none}}

@@ -18,7 +18,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="assets/icon-180.png">
-<link rel="stylesheet" href="assets/arena.css?v=20261028g">
+<link rel="stylesheet" href="assets/arena.css?v=20261028h">
 <script type="application/ld+json">{"@context":"https://schema.org","@type":"Store","name":"Arena Prime","description":"Loja de card game em Florianópolis: One Piece, Pokémon, Riftbound, board games e ligas semanais.","url":"https://www.arenaprimefloripa.com.br/","image":"https://www.arenaprimefloripa.com.br/assets/img/og.jpg","logo":"https://www.arenaprimefloripa.com.br/assets/icon-180.png","address":{"@type":"PostalAddress","streetAddress":"R. Ver. Osvaldo Bittencourt, 637","addressLocality":"Florianópolis","addressRegion":"SC","postalCode":"88047-700","addressCountry":"BR"},"geo":{"@type":"GeoCoordinates","latitude":-27.669467,"longitude":-48.5354068},"telephone":"+55 48 99963-0724","openingHours":["Mo 14:00-22:00","We-Su 14:00-22:00"],"hasMap":"https://www.google.com/maps/search/?api=1&query=Arena%20Prime&query_place_id=ChIJ2Sc515M7J5UR5rrpbv-hoo0","sameAs":["https://instagram.com/arenaprimefloripa","https://mypcards.com/ArenaPrimeFloripa"]}</script>
 </head>
 <body>
@@ -144,7 +144,7 @@
 </main>
 <div id="ftr"></div>
 
-<script src="assets/arena.js?v=20261028g"></script>
+<script src="assets/arena.js?v=20261028h"></script>
 <script>
 (async function () {
   mountChrome('home');
@@ -169,30 +169,33 @@
   let atual = jogos[0] ? jogos[0].id : null;
 
   // primeira tela: destaque do jogo escolhido
+  // primeira tela: o "cartão do jogo" (onde e quando jogar + o melhor da loja daquele jogo)
+  const evsTopo = await DB.eventos().catch(() => []);
+  const quandoTopo = (dia) => { const hoje = new Date(), d = (dia - hoje.getDay() + 7) % 7, dt = new Date(hoje.getTime() + d * 864e5); return (d === 0 ? 'Hoje' : d === 1 ? 'Amanhã' : DIAS_LONGO[dia]) + ', ' + dt.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }); };
+  const RANK_T = { 'Booster box': 6, 'Box': 5, 'Pra jogar na loja': 4, 'Jogo de tabuleiro': 4, 'Double Pack': 3, 'Deck pronto': 3, 'Colecionável': 3, 'Booster': 2, 'Acessório': 1 };
+  const pesoT = (p) => (p.destaque ? 1e9 : 0) + (p.imagem ? 1e8 : 0) + (p.preco || 0) * 100 + (RANK_T[p.categoria] || 0);
   async function drawFeat() {
     const j = jogos.find((x) => x.id === atual);
     const ps = await DB.produtos({ jogo: atual });
-    const f = ps.find((p) => p.destaque) || ps.find((p) => p.tipo === 'lacrado') || ps[0];
     const box = $('#feat');
-    if (!f) { box.innerHTML = `<p class="tag" style="margin-top:0">${esc(j.nome.toUpperCase())}</p><p class="feat-empty">Os produtos de ${esc(j.nome)} aparecem aqui assim que forem cadastrados.</p><a class="feat-all" href="index.html#lista">Procurando algo de ${esc(j.nome)}? Pede na lista de desejos</a>`; return; }
-    const more = ps.filter((p) => p.id !== f.id).slice(0, 4);
-    const url = 'produto.html?id=' + encodeURIComponent(f.id);
-    const meta = f.tipo === 'carta' ? [f.colecao, (f.condicao || '').split(' ·')[0], f.idioma].filter(Boolean).join(' · ') : [naMesa(f) ? '' : f.categoria, f.colecao].filter(Boolean).join(' · ');
-    box.innerHTML = `<p class="tag" style="margin-top:0">${f.destaque ? 'DESTAQUE' : 'CHEGOU AGORA'} · ${esc(j.nome.toUpperCase())}</p>
-      <div class="feat-main">
-        <a class="stage feat-stage" href="${url}" tabindex="-1" aria-hidden="true">${media(f, { alt: false })}</a>
-        <div class="feat-info">
-          <h2><a href="${url}">${esc(f.nome)}</a></h2>
-          <p class="feat-meta">${esc(meta)}${!naMesa(f) && f.estoque > 0 && f.estoque <= 2 ? ' · só ' + f.estoque + ' em estoque' : ''}</p>
-          ${naMesa(f) ? `<p class="big-price consulta">Pra jogar na mesa da Arena</p>
-          <a class="btn btn-accent" href="${waLink(msgMesa(f))}" target="_blank" rel="noopener">Quero jogar esse jogo</a>`
-          : `<p class="big-price${f.preco == null ? ' consulta' : ''}">${f.preco == null ? 'Preço sob consulta' : money(f.preco)}</p>
-          <button type="button" class="btn btn-accent" data-add="${esc(f.id)}">Colocar no pedido</button>`}
-        </div>
-      </div>
-      <div class="feat-more">
-        ${more.length ? `<span>Mais de ${esc(j.nome)}</span><ul>${more.map((m) => `<li><a href="produto.html?id=${encodeURIComponent(m.id)}" aria-label="${esc(m.nome)}">${media(m, { alt: false })}</a></li>`).join('')}</ul>` : ''}
-        <a class="feat-all" href="loja.html?jogo=${esc(j.id)}">Ver tudo de ${esc(j.nome)}</a>
+    const nome = j.nome.toLowerCase();
+    const hojeD = new Date().getDay();
+    const evs = evsTopo.filter((e) => (e.titulo || '').toLowerCase().includes(nome.split(' ')[0]))
+      .sort((a, b) => ((a.dia - hojeD + 7) % 7) - ((b.dia - hojeD + 7) % 7)).slice(0, 2);
+    const evHTML = evs.length ? `<ul class="gc-evs">${evs.map((e) => `<li><span class="gc-day" aria-hidden="true">${DIAS[e.dia]}</span><span><b>${esc(e.titulo)}</b><small>${quandoTopo(e.dia)}${e.horario ? ' · ' + esc(e.horario) : ''} · ${e.confirmado ? 'confirmado' : 'a confirmar'}</small></span></li>`).join('')}</ul>`
+      : j.id === 'board' ? '<p class="gc-noev">Os board games ficam na loja pra jogar na mesa. Escolhe um e chama no WhatsApp.</p>' : '';
+    const extra = j.id === 'pokemon' ? '<a class="gc-link" href="escolinha.html">Escolinha de Pokémon</a>' : '';
+    const top = ps.slice().sort((a, b) => pesoT(b) - pesoT(a)).slice(0, 3);
+    const prodHTML = top.map((p) => { const url = 'produto.html?id=' + encodeURIComponent(p.id);
+      return `<a class="gc-p" href="${url}"><span class="gc-img">${media(p, { alt: false })}</span><b>${esc(p.nome)}</b><span class="gc-price">${naMesa(p) ? 'Na mesa da loja' : p.preco == null ? 'Sob consulta' : money(p.preco)}</span></a>`; }).join('');
+    const temCarta = ps.some((p) => p.tipo === 'carta') || ['onepiece', 'pokemon', 'riftbound', 'magic'].includes(j.id);
+    box.innerHTML = `<p class="tag" style="margin-top:0">${esc(j.nome.toUpperCase())}</p>
+      ${evHTML ? `<p class="gc-h">Pra jogar na Arena</p>${evHTML}` : ''}
+      ${top.length ? `<p class="gc-h">${ps.length === 1 ? 'Na loja' : 'Destaques da loja'}</p><div class="gc-prods">${prodHTML}</div>` : `<p class="feat-empty">Os produtos de ${esc(j.nome)} aparecem aqui assim que forem cadastrados.</p>`}
+      <div class="gc-foot">
+        ${ps.length ? `<a class="btn btn-accent" href="loja.html?jogo=${esc(j.id)}">Ver ${ps.length === 1 ? 'o produto' : 'os ' + ps.length + ' produtos'}</a>` : ''}
+        ${temCarta ? `<a class="gc-link" href="${LOJA.myp}" target="_blank" rel="noopener">Cartas avulsas no MYP</a>` : ''}
+        ${extra}
       </div>`;
     box.classList.remove('in'); void box.offsetWidth; box.classList.add('in');
   }
