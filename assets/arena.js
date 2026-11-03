@@ -370,16 +370,38 @@ const Cart = {
     const c = Cart.get(), it = c.find((x) => x.id === p.id), max = p.estoque ?? 99;
     if (it) it.qtd = Math.min(max, it.qtd + qtd);
     else c.push({ id: p.id, nome: p.nome, preco: p.preco, imagem: p.imagem || '', categoria: p.categoria, tipo: p.tipo, info: tagLine(p), qtd: Math.min(max, qtd), max });
-    Cart.set(c); toast(p.nome + ' foi pro pedido');
+    Cart.set(c); avisoPedido(p);
   },
   count() { return Cart.get().reduce((s, x) => s + x.qtd, 0); },
-  render() { $$('[data-cart-count]').forEach((el) => { el.textContent = Cart.count(); }); if ($('#drawer') && !$('#drawer').hidden) drawBody(); }
+  render() { const n = Cart.count(); $$('[data-cart-count]').forEach((el) => { el.textContent = n; }); const f = $('#cart-float'); if (f) f.classList.toggle('tem', n > 0); if ($('#drawer') && !$('#drawer').hidden) drawBody(); }
 };
+/* aviso de item adicionado: toast com "Ver pedido" + pulso no contador */
+function avisoPedido(p) {
+  let t = $('#toast-ped');
+  if (!t) {
+    t = document.createElement('div'); t.id = 'toast-ped'; t.className = 'toast toast-ped'; t.setAttribute('role', 'status'); t.setAttribute('aria-live', 'polite');
+    t.innerHTML = '<span class="tp-ok" aria-hidden="true"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg></span><span class="tp-txt"><b>Foi pro pedido</b><span class="tp-nome"></span></span><button type="button" class="tp-ver">Ver pedido</button>';
+    document.body.appendChild(t);
+    t.querySelector('.tp-ver').onclick = () => { t.hidden = true; openDrawer(); };
+  }
+  t.querySelector('.tp-nome').textContent = p.nome;
+  t.hidden = false; t.classList.remove('in'); void t.offsetWidth; t.classList.add('in');
+  clearTimeout(avisoPedido._t); avisoPedido._t = setTimeout(() => { t.hidden = true; }, 4200);
+  $$('.cart-count, #cart-float').forEach((el) => { el.classList.remove('pulso'); void el.offsetWidth; el.classList.add('pulso'); });
+}
+function marcarBotao(b) {
+  if (!b || b.id === 'buy') return;
+  clearTimeout(b._t);
+  if (!b.dataset.orig) b.dataset.orig = b.innerHTML;
+  b.classList.add('ok');
+  b.innerHTML = b.classList.contains('pjx-plus') ? '<svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>' : '✓ No pedido';
+  b._t = setTimeout(() => { b.classList.remove('ok'); b.innerHTML = b.dataset.orig; }, 2200);
+}
 document.addEventListener('click', async (e) => {
   const b = e.target.closest('[data-add]');
   if (!b) return;
   const p = await DB.produto(b.dataset.add);
-  if (p) Cart.add(p);
+  if (p) { Cart.add(p); marcarBotao(b); }
 });
 
 /* ---------- gaveta do pedido ---------- */
@@ -458,16 +480,23 @@ function drawBody() {
     if (win) win.location = url; else location.href = url;
   });
 }
+const SITE_URL = 'https://www.arenaprimefloripa.com.br/';
 function pedidoMsg(c) {
-  const linhas = c.map((x) => `• ${x.qtd}x ${x.nome} (${x.info}) · ${money(x.preco)}`);
+  /* mensagem do pedido: um bloco por item (nome em negrito, detalhes, valor, link). O 1º link gera a prévia com o logo no WhatsApp. */
+  const blocos = c.map((x, i) => {
+    const valor = x.preco == null ? 'Preço sob consulta' : x.qtd > 1 ? `${x.qtd} x ${money(x.preco)} = *${money(x.preco * x.qtd)}*` : `1 x *${money(x.preco)}*`;
+    return [`*${i + 1}. ${x.nome}*`, x.info || '', valor, SITE_URL + 'produto.html?id=' + encodeURIComponent(x.id)].filter(Boolean).join('\n');
+  });
   const comPreco = c.filter((x) => x.preco != null), semPreco = c.length - comPreco.length;
   const total = comPreco.reduce((s, x) => s + x.preco * x.qtd, 0);
-  let fim = '';
-  if (!semPreco) fim = `Total: ${money(total)}`;
-  else if (comPreco.length) fim = `Total dos itens com preço: ${money(total)}\nOs outros itens estão com preço sob consulta.`;
+  const itens = c.reduce((s, x) => s + x.qtd, 0);
+  let fim;
+  if (!semPreco) fim = `*Total: ${money(total)}* (${itens} ${itens > 1 ? 'itens' : 'item'})`;
+  else if (comPreco.length) fim = `*Total dos itens com preço: ${money(total)}*\nOs outros estão sob consulta, pode me passar o valor?`;
   else fim = 'Pode me passar o valor?';
-  return `Oi, Arena Prime! Quero fazer esse pedido pelo site:\n\n${linhas.join('\n')}\n\n${fim}`;
+  return `Oi, Arena Prime! Quero fazer este pedido pelo site:\n\n${blocos.join('\n\n')}\n\n${fim}`;
 }
+
 
 /* ---------- cabeçalho e rodapé ---------- */
 function header(atual) {
@@ -496,12 +525,16 @@ function footer() {
     <a href="${LOJA.myp}" target="_blank" rel="noopener">Cartas avulsas no MYP</a>
     <span class="foot-cnpj">CNPJ ${esc(LOJA.cnpj)}</span>
   </div></footer>
+  <button type="button" class="cart-float" id="cart-float" aria-label="Abrir pedido"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h2l2.4 11.2a2 2 0 0 0 2 1.6h7.7a2 2 0 0 0 2-1.5L21 8H6.2"/><circle cx="10" cy="20.5" r="1"/><circle cx="17" cy="20.5" r="1"/></svg>Pedido <span class="cart-count" data-cart-count>0</span></button>
   <a class="wa-float" href="${waLink('Oi, Arena Prime! Vim pelo site.')}" target="_blank" rel="noopener" aria-label="Falar com a loja no WhatsApp"><svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2a8.2 8.2 0 0 1-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8s-.4-.1-.6.1-.7.8-.8 1-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.2-.4.2-.4.7-1.3.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2 5.2 5.2 0 0 0 1.1 2.7 11.8 11.8 0 0 0 4.5 4c1.7.7 2.3.8 3.1.7a2.7 2.7 0 0 0 1.8-1.3 2.2 2.2 0 0 0 .2-1.3c-.1-.1-.3-.2-.5-.3Z"/></svg></a>`;
 }
 function mountChrome(atual) {
   $('#hdr').outerHTML = header(atual);
   $('#ftr').outerHTML = footer();
   $('#open-cart').addEventListener('click', openDrawer);
+  $('#cart-float').addEventListener('click', openDrawer);
+  /* pílula do pedido aparece quando o botão do topo sai da tela */
+  if ('IntersectionObserver' in window) new IntersectionObserver(([en]) => { $('#cart-float').classList.toggle('fora', !en.isIntersecting); }).observe($('#open-cart'));
   Cart.render();
 }
 window.addEventListener('storage', (e) => { if (e.key === CART_KEY) Cart.render(); });
