@@ -16,7 +16,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="assets/icon-180.png">
-<link rel="stylesheet" href="assets/arena.css?v=20261103c">
+<link rel="stylesheet" href="assets/arena.css?v=20261109b">
 </head>
 <body>
 <div id="hdr"></div>
@@ -27,14 +27,18 @@
   </section>
   <section class="agenda" aria-labelledby="rel-t" id="rel-sec" hidden>
     <div class="wrap" style="display:block">
-      <h2 class="sec-title" id="rel-t" style="margin-bottom:28px">Mais desse jogo</h2>
+      <div class="rel-head"><h2 class="sec-title" id="rel-t">Mais desse jogo</h2>
+        <div class="shelf-ctrl" id="rel-ctrl" hidden>
+          <button type="button" class="arrow" data-dir="-1" aria-label="Voltar nos produtos"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m15 18-6-6 6-6"/></svg></button>
+          <button type="button" class="arrow" data-dir="1" aria-label="Avançar nos produtos"><svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m9 18 6-6-6-6"/></svg></button>
+        </div></div>
       <div class="panel light" style="padding:40px clamp(20px,4vw,48px)"><div class="track" id="rel" role="list"></div></div>
     </div>
   </section>
 </main>
 <div id="ftr"></div>
 
-<script src="assets/arena.js?v=20261103c"></script>
+<script src="assets/arena.js?v=20261109b"></script>
 <script>
 (async function () {
   mountChrome('loja');
@@ -55,7 +59,8 @@
   const sem = !mesa && (p.estoque ?? 0) <= 0;
   let qtd = 1;
   const compraHTML = `
-      <p class="big-price">${money(p.preco)}</p>
+      ${p.promo ? `<p class="promo-tag"><span class="promo-badge inline">-${p.promo}%</span> Em promoção${ateTxt(p) ? ' ' + ateTxt(p) : ''}</p>` : ''}
+      <p class="big-price">${precoHTML(p)}</p>
       <p style="margin:0;color:var(--light-muted);font-weight:600">${sem ? 'Esgotado no momento' : p.estoque === 1 ? 'Última unidade' : p.estoque + ' em estoque'}</p>
       <div class="buy-row">
         ${sem ? '' : `<div class="qty" role="group" aria-label="Quantidade"><button type="button" id="qmenos" aria-label="Diminuir quantidade">−</button><output id="q" aria-live="polite">1</output><button type="button" id="qmais" aria-label="Aumentar quantidade">+</button></div>`}
@@ -87,7 +92,7 @@ ${mesa ? jogarHTML : compraHTML}
     $('#buy').onclick = () => { Cart.add(p, qtd); openDrawer(); };
   }
   const rel = (await DB.produtos({ jogo: p.jogo })).filter((x) => x.id !== p.id).slice(0, 10);
-  if (rel.length) { $('#rel').innerHTML = rel.map((x) => itemHTML(x, true)).join(''); $('#rel-sec').hidden = false; }
+  if (rel.length) { $('#rel').innerHTML = rel.map((x) => itemHTML(x, true)).join(''); $('#rel-sec').hidden = false; esteira($('#rel'), $('#rel-ctrl')); }
 })();
 </script>
 </body>

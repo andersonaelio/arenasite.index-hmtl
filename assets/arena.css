@@ -680,3 +680,31 @@ a.com-btn:hover{background:#F2ECFF;color:#2A1260}
 .add.ok,.pjx-plus.ok,[data-add].ok{background:#1F8F4E!important;color:#fff!important;border-color:#1F8F4E!important}
 @media (max-width:640px){.cart-float{left:12px;bottom:12px;height:50px}.toast-ped{bottom:76px}}
 @media (prefers-reduced-motion:reduce){.toast-ped.in,.pulso{animation:none}}
+
+/* esteira de produtos (04/nov) */
+.rel-head{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px 24px;margin-bottom:28px}
+.rel-head .sec-title{margin:0}
+.track.esteira{scroll-snap-type:none;scroll-behavior:auto;cursor:grab;-webkit-mask-image:linear-gradient(90deg,transparent 0,#000 40px,#000 calc(100% - 40px),transparent);mask-image:linear-gradient(90deg,transparent 0,#000 40px,#000 calc(100% - 40px),transparent)}
+.track.esteira.cabe{-webkit-mask-image:none;mask-image:none;cursor:auto}
+.track.esteira.puxando{cursor:grabbing;user-select:none}
+.track.esteira.puxando *{pointer-events:none}
+.track.esteira img{-webkit-user-drag:none}
+.rel-head .arrow{background:var(--ink);border-color:var(--ink);color:#111;cursor:pointer}
+.rel-head .arrow:hover{background:#B794FF;border-color:#B794FF}
+.rel-head .arrow:focus-visible{outline:2px solid #B794FF;outline-offset:3px}
+@media (max-width:640px){.rel-head{flex-wrap:nowrap}.rel-head .arrow{width:44px;height:44px}}
+/* promoção (09/nov) */
+.promo-badge{position:absolute;left:8%;top:8%;z-index:2;padding:5px 10px;border-radius:12px;background:#6D28D9;color:#fff;font-family:var(--f-disp);font-size:14px;font-weight:800;line-height:1.2;letter-spacing:.02em}
+.promo-badge.inline{position:static;display:inline-block;vertical-align:middle;font-size:15px}
+.preco-de{color:var(--light-muted);font-weight:600;text-decoration-thickness:2px}
+.price .preco-de,.pjx-price .preco-de,.gc-price .preco-de{display:block;font-size:13px;font-family:var(--f-body);line-height:1.2}
+.big-price .preco-de{font-size:.5em;margin-right:6px}
+.preco-por{color:#5B21B6}
+.promo-tag{margin:22px 0 -14px;display:flex;align-items:center;gap:10px;font-weight:700;color:var(--light-ink)}
+.promo-sec{padding-bottom:0}
+.promo-campos:not([hidden]){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 20px;background:#F1ECFA;border-radius:16px;padding:16px 18px}
+.promo-campos .full{grid-column:1/-1}
+.promo-calc{margin:0;font-weight:600;font-size:16px}
+.promo-calc s{color:var(--light-muted)}
+.promo-calc b{color:#5B21B6}
+@media (max-width:640px){.promo-campos:not([hidden]){grid-template-columns:1fr}}

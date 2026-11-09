@@ -9,7 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;700;800&family=Schibsted+Grotesk:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="assets/icon-180.png">
-<link rel="stylesheet" href="assets/arena.css?v=20261103c">
+<link rel="stylesheet" href="assets/arena.css?v=20261109b">
 </head>
 <body class="adm light">
 <!-- Mapa: login · cabeçalho/abas · Produtos (lista + formulário) · Agenda · Jogos · Lista de desejos -->
@@ -84,6 +84,14 @@
           <label class="field">Preço (R$) <small>Vazio = "sob consulta"</small><input class="input" name="preco" inputmode="decimal" autocomplete="off" placeholder="Ex: 34,90" aria-describedby="pf-e-preco"></label>
           <p class="err full" id="pf-e-preco" hidden>Escreve só o número do preço, tipo 34,90.</p>
           <label class="field">Quantidade em estoque<input class="input" name="estoque" type="number" min="0" step="1" inputmode="numeric" value="1"></label>
+          <label class="check full"><input type="checkbox" name="promo_on" id="pf-promo-on"> Este produto está em promoção</label>
+          <div class="full promo-campos" id="pf-promo" hidden>
+            <label class="field">Desconto (%)<input class="input" name="promo_pct" type="number" min="1" max="90" step="1" inputmode="numeric" placeholder="Ex: 15" aria-describedby="pf-e-promo"></label>
+            <label class="field">Vale até <small>Opcional. Vazio = até tirar</small><input class="input" name="promo_ate" type="text" inputmode="numeric" autocomplete="off" placeholder="dd/mm/aaaa" maxlength="10" aria-describedby="pf-e-ate"></label>
+            <p class="err full" id="pf-e-ate" hidden>Escreve a data como dia/mês/ano, tipo 15/11/2026.</p>
+            <p class="promo-calc full" id="pf-promo-calc" role="status" aria-live="polite"></p>
+            <p class="err full" id="pf-e-promo" hidden>Coloca um desconto entre 1 e 90%, e o produto precisa ter preço.</p>
+          </div>
           <div class="full" style="display:flex;flex-wrap:wrap;gap:16px;align-items:center">
             <div class="preview" id="pf-prev"><span style="color:var(--light-muted);font-size:14px">Sem foto</span></div>
             <div style="display:flex;flex-direction:column;gap:10px">
@@ -181,7 +189,7 @@
   </div></main>
 </div>
 
-<script src="assets/arena.js?v=20261103c"></script>
+<script src="assets/arena.js?v=20261109b"></script>
 <script>
 (async function () {
   const ST = ['novo', 'procurando', 'encontrada', 'avisado'];
@@ -263,7 +271,7 @@
     $('#p-count').textContent = ps.length + (ps.length === 1 ? ' produto' : ' produtos');
     $('#p-rows').innerHTML = ps.map((p) => `<div class="row">
       <div class="th">${media(p, { alt: false })}</div>
-      <div class="nm"><p><b>${esc(p.nome)}</b> ${p.destaque ? '<span class="pill on">Destaque</span>' : ''}</p><p class="s">${esc(tagLine(p))} · ${money(p.preco)}</p></div>
+      <div class="nm"><p><b>${esc(p.nome)}</b> ${p.destaque ? '<span class="pill on">Destaque</span>' : ''} ${promoPct(p) ? `<span class="pill on">Promoção -${promoPct(p)}%</span>` : p.promo_pct ? '<span class="pill">Promoção encerrada</span>' : ''}</p><p class="s">${esc(tagLine(p))} · ${money(p.preco)}</p></div>
       <div class="stepper" role="group" aria-label="Estoque de ${esc(p.nome)}"><button type="button" data-st="-1" data-id="${esc(p.id)}" aria-label="Tirar um do estoque">−</button><b>${p.estoque ?? 0}</b><button type="button" data-st="1" data-id="${esc(p.id)}" aria-label="Somar um no estoque">+</button></div>
       <button type="button" class="btn btn-ghost" data-edit="${esc(p.id)}">Editar</button></div>`).join('') || '<p class="empty">Nenhum produto com esses filtros.</p>';
   }
@@ -285,9 +293,25 @@
     ['nome', 'colecao', 'numero', 'raridade', 'idioma'].forEach((k) => { f[k].value = d[k] || ''; });
     f.condicao.value = d.condicao || CONDICOES[0]; f.estoque.value = d.estoque ?? 1;
     f.preco.value = d.preco != null ? String(d.preco).replace('.', ',') : ''; f.destaque.checked = !!d.destaque; f.recorte.checked = !!d.recorte;
+    f.promo_on.checked = !!d.promo_pct; f.promo_pct.value = d.promo_pct || ''; f.promo_ate.value = d.promo_ate ? d.promo_ate.split('-').reverse().join('/') : ''; $('#pf-e-ate').hidden = true; $('#pf-e-promo').hidden = true; promoUI();
     foto = d.imagem || ''; ultimaFoto = null; $('#pf-fundo').hidden = true; setPrev(); showTipo();
     $('#prod-list-view').hidden = true; f.hidden = false; f.nome.focus();
   }
+  /* promoção: mostra os campos e calcula o preço com desconto enquanto digita */
+  const lerPreco = (v) => { const pr = String(v || '').trim().replace(/[R$\s]/g, '').replace(/\.(?=\d{3}(\D|$))/g, '').replace(',', '.'); return pr === '' ? null : Number(pr); };
+  function promoUI() {
+    const f = $('#prod-form'); $('#pf-promo').hidden = !f.promo_on.checked;
+    const preco = lerPreco(f.preco.value), pct = parseInt(f.promo_pct.value, 10), out = $('#pf-promo-calc');
+    if (!f.promo_on.checked) { out.textContent = ''; return; }
+    if (preco == null || isNaN(preco)) { out.textContent = 'Coloca o preço do produto pra calcular a promoção.'; return; }
+    if (!(pct >= 1 && pct <= 90)) { out.textContent = 'Preço normal ' + money(preco) + '. Escolhe a porcentagem.'; return; }
+    out.innerHTML = `No site fica: <s>${money(preco)}</s> por <b>${money(precoPromo(preco, pct))}</b> (-${pct}%)`;
+  }
+  // data no formato brasileiro: põe as barras sozinho (15112026 → 15/11/2026)
+  $('#prod-form').promo_ate.addEventListener('input', (e) => { const d = e.target.value.replace(/\D/g, '').slice(0, 8); e.target.value = [d.slice(0, 2), d.slice(2, 4), d.slice(4)].filter(Boolean).join('/'); });
+  const dataISO = (v) => { const m = String(v || '').trim().match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); if (!m) return null; const [, dd, mm, aa] = m.map(Number); const dt = new Date(aa, mm - 1, dd); if (dt.getDate() !== dd || dt.getMonth() !== mm - 1) return null; return `${aa}-${String(mm).padStart(2, '0')}-${String(dd).padStart(2, '0')}`; };
+  ['promo_on', 'promo_pct', 'preco'].forEach((n) => $('#prod-form')[n].addEventListener('input', promoUI));
+  $('#prod-form').promo_on.addEventListener('change', () => { promoUI(); if ($('#prod-form').promo_on.checked) $('#prod-form').promo_pct.focus(); });
   function closeForm() { $('#prod-form').hidden = true; $('#prod-list-view').hidden = false; renderProdutos(); }
   $('#novo-prod').onclick = () => openForm(null);
   $('#pf-cancel').onclick = closeForm;
@@ -318,12 +342,18 @@
     const pr = f.preco.value.trim().replace(/[R$\s]/g, '').replace(/\.(?=\d{3}(\D|$))/g, '').replace(',', '.');
     const preco = pr === '' ? null : Number(pr); const precoOk = preco === null || (!isNaN(preco) && preco >= 0);
     $('#pf-e-preco').hidden = precoOk; f.preco.setAttribute('aria-invalid', !precoOk);
-    if (!nome) { f.nome.focus(); return; } if (!precoOk) { f.preco.focus(); return; }
+    const promoPctV = f.promo_on.checked ? parseInt(f.promo_pct.value, 10) : null;
+    const promoOk = !f.promo_on.checked || (promoPctV >= 1 && promoPctV <= 90 && preco != null);
+    const ateTxtV = f.promo_ate.value.trim(), ateISO = ateTxtV ? dataISO(ateTxtV) : null, ateOk = !f.promo_on.checked || !ateTxtV || !!ateISO;
+    $('#pf-e-ate').hidden = ateOk; f.promo_ate.setAttribute('aria-invalid', !ateOk);
+    $('#pf-e-promo').hidden = promoOk; f.promo_pct.setAttribute('aria-invalid', !promoOk);
+    if (!nome) { f.nome.focus(); return; } if (!precoOk) { f.preco.focus(); return; } if (!promoOk) { f.promo_pct.focus(); return; } if (!ateOk) { f.promo_ate.focus(); return; }
     const tipo = f.tipo.value;
     const row = { tipo, jogo: f.jogo.value, categoria: tipo === 'carta' ? 'Carta' : f.categoria.value, nome, colecao: f.colecao.value.trim(),
       numero: tipo === 'carta' ? f.numero.value.trim() : '', raridade: tipo === 'carta' ? f.raridade.value.trim() : '',
       condicao: tipo === 'carta' ? f.condicao.value : '', idioma: tipo === 'carta' ? f.idioma.value.trim() : '',
-      preco, estoque: Math.max(0, parseInt(f.estoque.value, 10) || 0), imagem: foto, recorte: f.recorte.checked && !!foto, destaque: f.destaque.checked };
+      preco, estoque: Math.max(0, parseInt(f.estoque.value, 10) || 0), imagem: foto, recorte: f.recorte.checked && !!foto, destaque: f.destaque.checked,
+      promo_pct: promoPctV || null, promo_ate: f.promo_on.checked ? ateISO : null };
     if (editing) row.id = editing.id;
     try { await DB.salvar('produtos', row); toast('Produto salvo'); closeForm(); }
     catch (err) { $('#pf-err').textContent = 'Não salvou: ' + (err.message || 'erro desconhecido') + '. Tenta de novo.'; $('#pf-err').hidden = false; }

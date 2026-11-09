@@ -34,6 +34,28 @@ const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const esc = (v) => String(v ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const money = (v) => (v == null || v === '' || isNaN(v)) ? 'Sob consulta' : Number(v).toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' });
+/* promoção: o banco guarda o preço cheio + promo_pct (e promo_ate opcional); o site mostra e cobra o preço com desconto */
+const NO_PAINEL = /painel/.test(location.pathname);
+function promoPct(p) {
+  const pct = Number(p && p.promo_pct) || 0;
+  if (!pct || p.preco == null || pct <= 0 || pct >= 100) return 0;
+  if (p.promo_ate) { const fim = new Date(p.promo_ate + 'T23:59:59'); if (Date.now() > fim.getTime()) return 0; }
+  return pct;
+}
+const precoPromo = (preco, pct) => Math.round(preco * (100 - pct)) / 100;
+function comPromo(p) {
+  if (!p || NO_PAINEL) return p;
+  const pct = promoPct(p);
+  if (!pct) return { ...p, promo: 0 };
+  return { ...p, promo: pct, preco_de: Number(p.preco), preco: precoPromo(Number(p.preco), pct) };
+}
+const ateTxt = (p) => p.promo_ate ? 'até ' + new Date(p.promo_ate + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }) : '';
+function precoHTML(p, sem = 'Sob consulta') {
+  if (p.preco == null) return sem;
+  if (!p.promo) return money(p.preco);
+  return `<s class="preco-de" aria-label="De ${money(p.preco_de)}">${money(p.preco_de)}</s> <span class="preco-por">${money(p.preco)}</span>`;
+}
+const promoBadge = (p) => p.promo ? `<span class="promo-badge">-${p.promo}%</span>` : '';
 const waLink = (msg) => 'https://wa.me/' + WHATSAPP + '?text=' + encodeURIComponent(msg);
 const DIAS = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
 const DIAS_LONGO = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
@@ -99,7 +121,7 @@ function seed() {
 }
 const demoDb = () => { let d = store.get(DEMO_KEY, null); if (!d) { d = seed(); store.set(DEMO_KEY, d); } d.matriculas = d.matriculas || []; d.historico = d.historico || []; d.fornecedores = d.fornecedores || []; d.compras = d.compras || []; return d; };
 const demoSave = (d) => store.set(DEMO_KEY, d);
-const ROTULOS = { estoque: 'estoque', preco: 'preço', nome: 'nome', destaque: 'destaque', imagem: 'foto', colecao: 'coleção', condicao: 'condição', idioma: 'idioma', categoria: 'tipo', jogo: 'jogo', titulo: 'título', horario: 'horário', dia: 'dia', confirmado: 'confirmado', ativo: 'aparece no site', visivel: 'aparece no site', ordem: 'ordem', status: 'situação' };
+const ROTULOS = { promo_pct: 'promoção (%)', promo_ate: 'promoção até', estoque: 'estoque', preco: 'preço', nome: 'nome', destaque: 'destaque', imagem: 'foto', colecao: 'coleção', condicao: 'condição', idioma: 'idioma', categoria: 'tipo', jogo: 'jogo', titulo: 'título', horario: 'horário', dia: 'dia', confirmado: 'confirmado', ativo: 'aparece no site', visivel: 'aparece no site', ordem: 'ordem', status: 'situação' };
 function demoLog(db, acao, tabela, antes, depois) {
   const s = store.get('arena_demo_sessao', {}) || {}, email = s.email || 'demo';
   let det = '';
@@ -138,6 +160,7 @@ const DB = {
       if (tipo) q = q.eq('tipo', tipo);
       list = must(await q);
     }
+    list = list.map(comPromo);
     if (jogo) list = list.filter((p) => p.jogo === jogo);
     if (tipo) list = list.filter((p) => p.tipo === tipo);
     if (comEstoque) list = list.filter((p) => (p.estoque ?? 0) > 0);
@@ -150,8 +173,8 @@ const DB = {
     return list;
   },
   async produto(id) {
-    if (DEMO) return demoDb().produtos.find((p) => p.id === id) || null;
-    return must(await (await sb()).from('produtos').select('*').eq('id', id).maybeSingle());
+    if (DEMO) return comPromo(demoDb().produtos.find((p) => p.id === id) || null);
+    return comPromo(must(await (await sb()).from('produtos').select('*').eq('id', id).maybeSingle()));
   },
   async eventos({ todos = false } = {}) {
     let list = DEMO ? demoDb().eventos.slice() : must(await (await sb()).from('eventos').select('*'));
@@ -352,11 +375,11 @@ function itemHTML(p, li) {
   const mesa = naMesa(p);
   const sem = !mesa && (p.estoque ?? 0) <= 0;
   return `<article class="item${p.tipo === 'carta' ? ' is-card' : ''}"${li ? ' role="listitem"' : ''}>
-    <a class="stage" href="${url}" tabindex="-1" aria-hidden="true">${media(p, { alt: false })}${sem || mesa ? '' : `<span class="qty-badge">${p.estoque} unid.</span>`}</a>
+    <a class="stage" href="${url}" tabindex="-1" aria-hidden="true">${media(p, { alt: false })}${mesa ? '' : promoBadge(p)}${sem || mesa ? '' : `<span class="qty-badge">${p.estoque} unid.</span>`}</a>
     <p class="tag">${esc(tagLine(p))}</p>
     <h4><a href="${url}">${esc(p.nome)}</a></h4>
     ${p.estoque === 1 && !mesa ? '<p class="stock-low">Última unidade</p>' : ''}
-    <div class="item-foot"><span class="price">${mesa ? 'Na mesa da loja' : p.preco == null ? 'Sob consulta' : money(p.preco)}</span>
+    <div class="item-foot"><span class="price">${mesa ? 'Na mesa da loja' : precoHTML(p)}</span>
       ${mesa ? `<a class="add" href="${waLink(msgMesa(p))}" target="_blank" rel="noopener" aria-label="Quero jogar ${esc(p.nome)} na loja">Quero jogar</a>` : `<button type="button" class="add" data-add="${esc(p.id)}" ${sem ? 'disabled' : ''} aria-label="Colocar ${esc(p.nome)} no pedido">${sem ? 'Esgotado' : '+ Pedido'}</button>`}</div>
   </article>`;
 }
@@ -369,7 +392,7 @@ const Cart = {
   add(p, qtd = 1) {
     const c = Cart.get(), it = c.find((x) => x.id === p.id), max = p.estoque ?? 99;
     if (it) it.qtd = Math.min(max, it.qtd + qtd);
-    else c.push({ id: p.id, nome: p.nome, preco: p.preco, imagem: p.imagem || '', categoria: p.categoria, tipo: p.tipo, info: tagLine(p), qtd: Math.min(max, qtd), max });
+    else c.push({ id: p.id, nome: p.nome, preco: p.preco, promo: p.promo || 0, preco_de: p.preco_de ?? null, imagem: p.imagem || '', categoria: p.categoria, tipo: p.tipo, info: tagLine(p), qtd: Math.min(max, qtd), max });
     Cart.set(c); avisoPedido(p);
   },
   count() { return Cart.get().reduce((s, x) => s + x.qtd, 0); },
@@ -441,7 +464,7 @@ async function syncCart() {
     if (!p) { avisos.push(x.nome + ' saiu da loja e foi tirado do pedido.'); continue; }
     const est = p.estoque ?? 0;
     if (est <= 0) { avisos.push(p.nome + ' esgotou e foi tirado do pedido.'); continue; }
-    const it = { ...x, nome: p.nome, preco: p.preco, imagem: p.imagem || '', categoria: p.categoria, tipo: p.tipo, info: tagLine(p), max: est };
+    const it = { ...x, nome: p.nome, preco: p.preco, promo: p.promo || 0, preco_de: p.preco_de ?? null, imagem: p.imagem || '', categoria: p.categoria, tipo: p.tipo, info: tagLine(p), max: est };
     if ((x.preco ?? null) !== (p.preco ?? null)) avisos.push(p.nome + ': o preço mudou de ' + money(x.preco) + ' pra ' + money(p.preco) + '.');
     if (it.qtd > est) { avisos.push(p.nome + ': só tem ' + est + (est === 1 ? ' unidade' : ' unidades') + ', a quantidade foi ajustada.'); it.qtd = est; }
     novo.push(it);
@@ -485,7 +508,8 @@ function pedidoMsg(c) {
   /* mensagem do pedido: um bloco por item (nome em negrito, detalhes, valor, link). O 1º link gera a prévia com o logo no WhatsApp. */
   const blocos = c.map((x, i) => {
     const valor = x.preco == null ? 'Preço sob consulta' : x.qtd > 1 ? `${x.qtd} x ${money(x.preco)} = *${money(x.preco * x.qtd)}*` : `1 x *${money(x.preco)}*`;
-    return [`*${i + 1}. ${x.nome}*`, x.info || '', valor, SITE_URL + 'produto.html?id=' + encodeURIComponent(x.id)].filter(Boolean).join('\n');
+    const promo = x.promo ? `Promoção: ${x.promo}% off (de ${money(x.preco_de)})` : '';
+    return [`*${i + 1}. ${x.nome}*`, x.info || '', promo, valor, SITE_URL + 'produto.html?id=' + encodeURIComponent(x.id)].filter(Boolean).join('\n');
   });
   const comPreco = c.filter((x) => x.preco != null), semPreco = c.length - comPreco.length;
   const total = comPreco.reduce((s, x) => s + x.preco * x.qtd, 0);
@@ -538,3 +562,51 @@ function mountChrome(atual) {
   Cart.render();
 }
 window.addEventListener('storage', (e) => { if (e.key === CART_KEY) Cart.render(); });
+
+/* ---------- esteira: fileira de produtos que anda sozinha devagar ----------
+   Para quando o mouse está em cima, quando a pessoa toca/arrasta ou usa o teclado, e quando sai da tela.
+   Setas passam mais rápido. Arrastar com o mouse também funciona. Sem animação se a pessoa pediu menos movimento. */
+function esteira(tr, ctrl, vel = 30) {
+  if (!tr || tr._esteira) return; tr._esteira = true;
+  const quieto = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const originais = [...tr.children];
+  tr.classList.add('esteira');
+  if (tr.scrollWidth <= tr.clientWidth + 4) { tr.classList.add('cabe'); return; } // tudo cabe: nada a fazer
+  if (ctrl) ctrl.hidden = false;
+  // copia os itens uma vez pra dar a volta sem buraco; as cópias ficam fora do leitor de tela e do Tab
+  originais.forEach((el) => { const c = el.cloneNode(true); c.setAttribute('aria-hidden', 'true'); c.inert = true; c.dataset.clone = '1'; tr.appendChild(c); });
+  const volta = () => originais.length ? tr.children[originais.length].offsetLeft - originais[0].offsetLeft : 0;
+  let pos = tr.scrollLeft, ultimo = 0, pausa = 0, sobre = false, foco = false, visivel = true, arrastando = false;
+  const segurar = (ms) => { pausa = Math.max(pausa, performance.now() + ms); };
+  const ajusta = () => { const L = volta(); if (!L) return; if (pos >= L) pos -= L; if (pos < 0) pos += L; tr.scrollLeft = pos; };
+  function passo(t) {
+    const dt = ultimo ? Math.min(64, t - ultimo) : 0; ultimo = t;
+    if (!quieto && visivel && !sobre && !foco && !arrastando && !document.hidden && t > pausa) { pos += vel * dt / 1000; ajusta(); }
+    else pos = tr.scrollLeft;
+    requestAnimationFrame(passo);
+  }
+  requestAnimationFrame(passo);
+  tr.addEventListener('mouseenter', () => { sobre = true; });
+  tr.addEventListener('mouseleave', () => { sobre = false; });
+  tr.addEventListener('focusin', () => { foco = true; });
+  tr.addEventListener('focusout', () => { foco = false; });
+  tr.addEventListener('touchstart', () => segurar(4000), { passive: true });
+  tr.addEventListener('touchend', () => segurar(3000), { passive: true });
+  tr.addEventListener('wheel', () => segurar(2500), { passive: true });
+  if ('IntersectionObserver' in window) new IntersectionObserver(([e]) => { visivel = e.isIntersecting; }).observe(tr);
+  // arrastar com o mouse
+  let x0 = 0, s0 = 0, mexeu = false;
+  tr.addEventListener('pointerdown', (e) => { if (e.pointerType !== 'mouse' || e.button !== 0) return; arrastando = true; mexeu = false; x0 = e.clientX; s0 = tr.scrollLeft; });
+  window.addEventListener('pointermove', (e) => { if (!arrastando) return; const dx = e.clientX - x0; if (Math.abs(dx) > 5) { mexeu = true; tr.classList.add('puxando'); } if (mexeu) { pos = s0 - dx; ajusta(); } });
+  window.addEventListener('pointerup', () => { if (!arrastando) return; arrastando = false; tr.classList.remove('puxando'); segurar(1500); });
+  tr.addEventListener('click', (e) => { if (mexeu) { e.preventDefault(); e.stopPropagation(); mexeu = false; } }, true);
+  tr.addEventListener('dragstart', (e) => e.preventDefault());
+  // setas: passam um bloco de produtos de uma vez
+  if (ctrl) $$('.arrow', ctrl).forEach((b) => b.addEventListener('click', () => {
+    const dir = Number(b.dataset.dir), L = volta();
+    if (dir < 0 && tr.scrollLeft < tr.clientWidth) { pos = tr.scrollLeft + L; tr.scrollLeft = pos; }
+    if (dir > 0 && tr.scrollLeft >= L) { pos = tr.scrollLeft - L; tr.scrollLeft = pos; }
+    segurar(2500);
+    tr.scrollTo({ left: tr.scrollLeft + dir * Math.max(240, tr.clientWidth * 0.8), behavior: quieto ? 'auto' : 'smooth' });
+  }));
+}
